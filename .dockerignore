@@ -1,0 +1,10 @@
+# git
+.git/
+.gitignore
+
+# files
+.env
+push-docker-container.sh
+
+# bin
+bin/

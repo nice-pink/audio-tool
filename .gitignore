@@ -1,0 +1,15 @@
+.DS_Store
+*/.DS_Store
+
+# docker
+push-docker-container.sh
+
+# folder
+bin/
+tmp/
+
+# random
+.env
+
+# coverage
+cover.out
