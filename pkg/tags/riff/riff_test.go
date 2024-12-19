@@ -1,4 +1,4 @@
-package id3
+package riff
 
 import "testing"
 

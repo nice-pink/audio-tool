@@ -1,6 +1,11 @@
 package riff
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+
+	"github.com/nice-pink/audio-tool/pkg/util"
+	"github.com/nice-pink/goutil/pkg/log"
+)
 
 const (
 	RIFF_HEADER_SIZE = 12
@@ -28,25 +33,22 @@ func IsValid(data []byte) bool {
 		return false
 	}
 
-	dataLen := len(data)
-
-	// check file size
-	fileSize := binary.BigEndian.Uint32(data[4:9])
-	if dataLen != int(fileSize)-8 {
-		return false
-	}
+	// IGNORE: check file size
+	// dataLen := len(data)
+	// fileSize := binary.BigEndian.Uint32(data[4:9])
+	// if dataLen != int(fileSize)-8 {
+	// 	return false
+	// }
 
 	// fmt tag
 	fmt := []byte("fmt ")
-	for i, d := range fmt {
-		if data[12+i] != d {
-			return false
-		}
+	if !util.HasTagAtOffset(data, fmt, 12) {
+		return false
 	}
 
 	// find data block
 	offset := GetDataOffset(data)
-
+	log.Debug(offset)
 	return offset > 0
 }
 
@@ -56,22 +58,38 @@ func HasTagId(data []byte) bool {
 	}
 
 	chunkId := []byte("RIFF")
-	if !HasTagAtOffset(data, chunkId, 0) {
+	if !util.HasTagAtOffset(data, chunkId, 0) {
 		return false
 	}
 
-	// var chunkSize uint32
+	// var fileSize uint32
 
 	riffType := []byte("WAVE")
-	return HasTagAtOffset(data, riffType, 8)
+	return util.HasTagAtOffset(data, riffType, 8)
 }
 
-func Build(size uint32) []byte {
-	return []byte{}
+func Build(size, fileSize uint32) []byte {
+	data := make([]byte, size)
+	copy(data[0:4], []byte("RIFF"))
+	binary.BigEndian.PutUint32(data[4:8], fileSize-8)
+	copy(data[8:12], []byte("WAVE"))
+	copy(data[12:16], []byte("fmt "))
+	if size < 44 {
+		log.Error("riff tag too small", size)
+		return []byte{}
+	}
+	copy(data[size-8:size-4], []byte("data"))
+	binary.BigEndian.PutUint32(data[size-4:size], fileSize-size)
+	return data
 }
 
 func GetTagSize(data []byte) uint32 {
-	return 0
+	offset := GetDataOffset(data)
+	return uint32(offset) + DATA_HEADER_SIZE
+}
+
+func GetFileSize(data []byte) uint32 {
+	return binary.BigEndian.Uint32(data[4:9])
 }
 
 // helper
@@ -85,20 +103,12 @@ func GetDataOffset(data []byte) int {
 			// eof
 			return -1
 		}
-		if HasTagAtOffset(data, dataTag, offset) {
+		if util.HasTagAtOffset(data, dataTag, offset) {
 			// found data
+			log.Debug(string(data[offset : offset+4]))
 			break
 		}
 		offset++
 	}
 	return offset
-}
-
-func HasTagAtOffset(data, tag []byte, dataOffset int) bool {
-	for i, d := range tag {
-		if data[dataOffset+i] != d {
-			return false
-		}
-	}
-	return false
 }

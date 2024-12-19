@@ -42,16 +42,23 @@ func main() {
 }
 
 func writeTags(file *os.File, tags string) {
+	fs, err := file.Stat()
+	if err != nil {
+		log.Err(err, "file stats", file.Name())
+		return
+	}
+
+	// add tags
 	for _, t := range strings.Split(tags, ",") {
 		log.Info("handle", t)
 		var data []byte
 		tagInfo := strings.Split(t, ":")
 		if strings.EqualFold(tagInfo[0], "id3") {
 			size, _ := strconv.Atoi(tagInfo[1])
-			data = id3.Build(uint32(size))
-
+			data = id3.Build(uint32(size), uint32(fs.Size()))
 		}
 
+		// write tag to file
 		if len(data) > 0 {
 			n, err := file.Write(data)
 			if err != nil {

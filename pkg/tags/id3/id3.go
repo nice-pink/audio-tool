@@ -77,7 +77,7 @@ func HasTagFooter(data []byte) bool {
 	return data[5]&mask == mask
 }
 
-func Build(size uint32) []byte {
+func Build(size, fileSize uint32) []byte {
 	if size < ID3_HEADER_SIZE {
 		return []byte{}
 	}
