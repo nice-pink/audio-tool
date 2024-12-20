@@ -10,7 +10,7 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
-func (c Connection) StreamBuffer(sendBitRate float64, byteSegmentSize, fullSize, loops int, buffer []byte) error {
+func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, byteSegmentSize int) error {
 	// if sendBitRate == 0, then send as quick as possible
 
 	addr := c.GetAddr()
@@ -30,11 +30,8 @@ func (c Connection) StreamBuffer(sendBitRate float64, byteSegmentSize, fullSize,
 	streamStart := time.Now().UnixNano()
 	var byteIndex int = 0
 	// var byteSegmentSize int64 = 1024
-	bufferLen := fullSize
-	if bufferLen <= 0 {
-		bufferLen = len(buffer)
-	}
-	loopCount := 0
+	bufferLen := len(buffer)
+	// loopCount := 0
 
 	// run loop
 	var max int
@@ -43,12 +40,13 @@ func (c Connection) StreamBuffer(sendBitRate float64, byteSegmentSize, fullSize,
 	for {
 		if byteIndex >= bufferLen {
 			// log.Info("Start loop", loopCount)
-			byteIndex = 0
-			count = 1
-			loopCount++
-			if loops > 0 && loopCount >= loops {
-				break
-			}
+			// byteIndex = 0
+			// count = 1
+			// loopCount++
+			// if loops > 0 && loopCount >= loops {
+			// 	break
+			// }
+			break
 		}
 
 		var rate float64 = -1
