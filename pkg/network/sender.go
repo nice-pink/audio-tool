@@ -10,7 +10,7 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
-func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, byteSegmentSize int) error {
+func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int) error {
 	// if sendBitRate == 0, then send as quick as possible
 
 	addr := c.GetAddr()
@@ -60,7 +60,7 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, byteSegment
 
 		// compare rate
 		if rate < sendBitRate {
-			max = min(bufferLen, count*int(byteSegmentSize))
+			max = min(bufferLen, count*int(chunkSize))
 			dist = max - byteIndex
 			// send data
 			bytesWrittenCycle, err = conn.Write(buffer[byteIndex:max])
@@ -90,7 +90,7 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, byteSegment
 	return nil
 }
 
-func (c Connection) SendFile(filepath string, byteSegmentSize int) error {
+func (c Connection) SendFile(filepath string, chunkSize int) error {
 	addr := c.GetAddr()
 	log.Info("Send file", filepath, "to", addr)
 
@@ -126,7 +126,7 @@ func (c Connection) SendFile(filepath string, byteSegmentSize int) error {
 	var bytes int
 	// run loop
 	for {
-		min = int(math.Min(float64(byteSegmentSize), float64(fileSize-int64(bytesRead))))
+		min = int(math.Min(float64(chunkSize), float64(fileSize-int64(bytesRead))))
 		if min == 0 {
 			break
 		}
