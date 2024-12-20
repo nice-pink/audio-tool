@@ -25,7 +25,7 @@ func NewConnection(url string, port int) Connection {
 	return Connection{Url: url, Port: port}
 }
 
-func (c Connection) CopyConnection() Connection {
+func (c Connection) DeepCopy() Connection {
 	return Connection{
 		Url:       c.Url,
 		Port:      c.Port,
