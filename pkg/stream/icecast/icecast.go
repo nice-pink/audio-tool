@@ -66,7 +66,7 @@ func addIcyMeta(meta IcyMeta) string {
 	audioInfo := "samplerate=" + strconv.Itoa(meta.SampleRate) + ";quality=" + strconv.Itoa(meta.Quality) + ";channels=" + strconv.Itoa(meta.Channels)
 	return `Content-Type: audio/mpeg
 Accept: */*
-User-Agent: streamey
+User-Agent: audio-tool
 Server: Icecast 2.4.0-kh15
 icy-br:` + strconv.Itoa(meta.Bitrate) + `
 icy-genre:Test

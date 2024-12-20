@@ -4,7 +4,6 @@ go 1.23.0
 
 require (
 	github.com/nice-pink/goutil v0.3.1
-	github.com/nice-pink/streamey v0.0.0-20240322094227-063d837a0ef0
 	github.com/prometheus/client_golang v1.20.5
 	golang.org/x/net v0.33.0
 )

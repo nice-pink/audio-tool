@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/nice-pink/audio-tool/pkg/audio"
 	"github.com/nice-pink/goutil/pkg/log"
-	"github.com/nice-pink/streamey/pkg/audio"
 )
 
 func main() {

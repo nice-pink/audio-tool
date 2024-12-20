@@ -3,8 +3,8 @@ package encodings
 import (
 	"errors"
 
+	"github.com/nice-pink/audio-tool/pkg/metricmanager"
 	"github.com/nice-pink/goutil/pkg/log"
-	"github.com/nice-pink/streamey/pkg/metricmanager"
 )
 
 // private bit validator

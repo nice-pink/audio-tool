@@ -12,8 +12,6 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/nice-pink/goutil v0.3.1 h1:dEJQkCWk7XY0FyzMBbDRkNd2/gD6osU4tCeIhNpsB/U=
 github.com/nice-pink/goutil v0.3.1/go.mod h1:9YMyl3vf6t4AJ6tlAHr2OKgunTG2DocOQqSDbKGnFe8=
-github.com/nice-pink/streamey v0.0.0-20240322094227-063d837a0ef0 h1:nnB8QvCMrG7xmly7Sip/Vm9/3FPkGGk70EQCe7b/OR8=
-github.com/nice-pink/streamey v0.0.0-20240322094227-063d837a0ef0/go.mod h1:bJj9js8tbDe0BVsn/an2JQEuJVYV2ohE+hKKUEnzBpE=
 github.com/prometheus/client_golang v1.20.5 h1:cxppBPuYhUnsO6yo/aoRol4L7q7UFfdm+bR9r+8l63Y=
 github.com/prometheus/client_golang v1.20.5/go.mod h1:PIEt8X02hGcP8JWbeHyeZ53Y/jReSnHgO035n//V5WE=
 github.com/prometheus/client_model v0.6.1 h1:ZKSh/rekM+n3CeS952MLRAdFwIKqeY8b62p8ais2e9E=
