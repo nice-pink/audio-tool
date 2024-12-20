@@ -10,6 +10,7 @@ import (
 const (
 	ID3_HEADER_SIZE = 10
 	ID3_FOOTER_SIZE = 10
+	ID3_TAG         = "ID3"
 )
 
 func IsValid(data []byte) bool {
@@ -19,7 +20,7 @@ func IsValid(data []byte) bool {
 
 	offset := 3
 
-	// version: yy < FF
+	// version
 	vData, _ := hex.DecodeString("FFFF")
 	for i, d := range vData {
 		if data[i+offset] == d {
@@ -27,10 +28,10 @@ func IsValid(data []byte) bool {
 		}
 	}
 
-	// skip flags: xx
+	// skip flags
 	offset = 7
 
-	// version:= zz < 80
+	// version
 	zzData, _ := hex.DecodeString("80808080")
 	for i, d := range zzData {
 		if data[i+offset] == d {
@@ -42,17 +43,12 @@ func IsValid(data []byte) bool {
 }
 
 func HasTagId(data []byte) bool {
-	// I D 3 yy yy xx zz zz zz zz
-	// yy < FF
-	// xx -> flags
-	// zz < 80
-
 	if len(data) < ID3_HEADER_SIZE {
 		return false
 	}
 
-	// tag id: 49 44 33
-	idData := []byte("ID3")
+	// tag id
+	idData := []byte(ID3_TAG)
 	for i, d := range idData {
 		if data[i] != d {
 			return false
@@ -61,7 +57,7 @@ func HasTagId(data []byte) bool {
 	return true
 }
 
-func GetTagSize(data []byte) uint32 {
+func GetTagSize(data []byte) int64 {
 	val := binary.BigEndian.Uint32(data[6:10])
 
 	footerSize := 0
@@ -69,10 +65,13 @@ func GetTagSize(data []byte) uint32 {
 		footerSize = ID3_FOOTER_SIZE
 	}
 
-	return util.Unsynchsafe(val) + uint32(ID3_HEADER_SIZE) + uint32(footerSize)
+	return int64(util.Unsynchsafe(val)) + int64(ID3_HEADER_SIZE) + int64(footerSize)
 }
 
 func HasTagFooter(data []byte) bool {
+	if len(data) < ID3_HEADER_SIZE {
+		return false
+	}
 	mask := uint8(0x10)
 	return data[5]&mask == mask
 }
@@ -85,7 +84,7 @@ func Build(size, fileSize uint32) []byte {
 	block := make([]byte, size)
 
 	// tag
-	tag := []byte("ID3")
+	tag := []byte(ID3_TAG)
 	copy(block[0:3], tag)
 
 	// version

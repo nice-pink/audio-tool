@@ -1,9 +1,9 @@
-package riff
+package quicktime
 
 import "testing"
 
 func TestBuild(t *testing.T) {
-	var size int64 = 1023
+	var size int64 = QUICKTIME_HEADER_SIZE_MIN
 	data := Build(uint32(size), 0)
 	if len(data) == 0 {
 		t.Error("no size")

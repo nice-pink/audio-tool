@@ -3,8 +3,8 @@ package id3
 import "testing"
 
 func TestBuild(t *testing.T) {
-	var size uint32 = 1023
-	data := Build(size, 0)
+	var size int64 = 1023
+	data := Build(uint32(size), 0)
 	if len(data) == 0 {
 		t.Error("no size")
 	}
