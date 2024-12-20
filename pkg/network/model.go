@@ -25,6 +25,18 @@ func NewConnection(url string, port int) Connection {
 	return Connection{Url: url, Port: port}
 }
 
+func (c Connection) CopyConnection() Connection {
+	return Connection{
+		Url:       c.Url,
+		Port:      c.Port,
+		ProxyUrl:  c.ProxyUrl,
+		ProxyPort: c.ProxyPort,
+		Meta:      c.Meta,
+		SrcInfo:   c.SrcInfo,
+		DestInfo:  c.DestInfo,
+	}
+}
+
 func (c Connection) GetHttpClient(timeout time.Duration) (*http.Client, error) {
 	client := &http.Client{Timeout: timeout * time.Second}
 
