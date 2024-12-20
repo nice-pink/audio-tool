@@ -6,6 +6,7 @@ require (
 	github.com/nice-pink/goutil v0.3.1
 	github.com/nice-pink/streamey v0.0.0-20240322094227-063d837a0ef0
 	github.com/prometheus/client_golang v1.20.5
+	golang.org/x/net v0.33.0
 )
 
 require (
@@ -16,7 +17,6 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )
