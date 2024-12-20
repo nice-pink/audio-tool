@@ -1,9 +1,9 @@
 package tags
 
 import (
-	"github.com/nice-pink/audio-tool/pkg/tags/id3"
-	"github.com/nice-pink/audio-tool/pkg/tags/quicktime"
-	"github.com/nice-pink/audio-tool/pkg/tags/riff"
+	"github.com/nice-pink/audio-tool/pkg/audio/tags/id3"
+	"github.com/nice-pink/audio-tool/pkg/audio/tags/quicktime"
+	"github.com/nice-pink/audio-tool/pkg/audio/tags/riff"
 )
 
 // interface

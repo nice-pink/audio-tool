@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/nice-pink/audio-tool/pkg/encodings"
+	"github.com/nice-pink/audio-tool/pkg/audio/encodings"
 	"github.com/nice-pink/goutil/pkg/log"
 )
 

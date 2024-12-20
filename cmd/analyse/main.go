@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/nice-pink/audio-tool/pkg/tags/id3"
+	"github.com/nice-pink/audio-tool/pkg/audio/tags/id3"
 	"github.com/nice-pink/goutil/pkg/log"
 )
 

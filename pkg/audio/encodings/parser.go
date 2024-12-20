@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nice-pink/audio-tool/pkg/tags"
+	"github.com/nice-pink/audio-tool/pkg/audio/tags"
 )
 
 type Parser struct {

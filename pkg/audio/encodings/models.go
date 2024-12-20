@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/nice-pink/audio-tool/pkg/tags"
+	"github.com/nice-pink/audio-tool/pkg/audio/tags"
 	"github.com/nice-pink/audio-tool/pkg/util"
 )
 
