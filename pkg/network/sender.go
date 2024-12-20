@@ -3,81 +3,21 @@ package network
 import (
 	"bufio"
 	"errors"
-	"io"
 	"math"
-	"net"
-	"net/http"
-	"net/url"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
-type Sender struct {
-	Url       string
-	Port      int
-	Meta      []byte
-	Filepath  string
-	ProxyUrl  string
-	ProxyPort int
-}
+func (c Connection) StreamBuffer(sendBitRate float64, byteSegmentSize, fullSize, loops int, buffer []byte) error {
+	// if sendBitRate == 0, then send as quick as possible
 
-func (s *Sender) SendData() ([]byte, error) {
-	addr := s.Url + ":" + strconv.Itoa(s.Port)
-	req, err := http.NewRequest(http.MethodPost, addr, nil)
-	if err != nil {
-		log.Err(err, "create job request")
-		return nil, err
-	}
-
-	client := s.GetHttpClient()
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Err(err, "post job request")
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		log.Error("status code != 200:", resp.StatusCode, resp.Status)
-		return nil, errors.New("status != 200")
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Err(err, "read body")
-		return nil, err
-	}
-
-	return data, nil
-}
-
-func (s *Sender) GetHttpClient() *http.Client {
-	var client *http.Client
-	if s.ProxyUrl != "" && s.ProxyPort != 0 {
-		proxyUrl, err := url.Parse("http://" + s.ProxyUrl + ":" + strconv.Itoa(s.ProxyPort))
-		if err != nil {
-			log.Err(err, "proxy url")
-			return nil
-		}
-		client = &http.Client{
-			Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)},
-		}
-	} else {
-		client = &http.Client{}
-	}
-	return client
-}
-
-// helper
-
-func StreamBuffer(address string, sendBitRate float64, byteSegmentSize, fullSize, loops int, buffer []byte) error {
-	log.Info("Stream data to", address, "with bitrate", sendBitRate)
+	addr := c.GetAddr()
+	log.Info("Stream data to", addr, "with bitrate", sendBitRate)
 
 	// connection
-	conn, err := net.Dial("tcp", address)
+	conn, err := c.GetSocketConn()
 	if err != nil {
 		log.Error(err, "can't dial.")
 		return err
@@ -111,7 +51,7 @@ func StreamBuffer(address string, sendBitRate float64, byteSegmentSize, fullSize
 			}
 		}
 
-		var rate float64 = 0
+		var rate float64 = -1
 		if sendBitRate > 0 {
 			/*
 			* calculate our instant rate over the entire transmit
@@ -152,8 +92,9 @@ func StreamBuffer(address string, sendBitRate float64, byteSegmentSize, fullSize
 	return nil
 }
 
-func SendFile(filepath, address string, byteSegmentSize int) error {
-	log.Info("Send file", filepath, "to", address)
+func (c Connection) SendFile(filepath string, byteSegmentSize int) error {
+	addr := c.GetAddr()
+	log.Info("Send file", filepath, "to", addr)
 
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -170,7 +111,7 @@ func SendFile(filepath, address string, byteSegmentSize int) error {
 	reader := bufio.NewReader(file)
 
 	// connection
-	conn, err := net.Dial("tcp", address)
+	conn, err := c.GetSocketConn()
 	if err != nil {
 		log.Error(err, "can't dial.")
 		return err

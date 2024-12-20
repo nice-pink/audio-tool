@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"time"
-
-	"golang.org/x/net/proxy"
 
 	"github.com/nice-pink/audio-tool/pkg/util"
 	"github.com/nice-pink/goutil/pkg/log"
@@ -34,9 +31,9 @@ func (v DummyValidator) Validate(data []byte, failEarly bool) error {
 
 // read stream
 
-func ReadStream(connection Connection, outputFilepath string, isHttp bool, timeout time.Duration, dataValidator DataValidator) {
+func (c Connection) ReadStream(outputFilepath string, isHttp bool, timeout time.Duration, dataValidator DataValidator) {
 	// early exit
-	if connection.Url == "" {
+	if c.Url == "" {
 		log.Newline()
 		log.Error("Define url!")
 		flag.Usage()
@@ -51,16 +48,16 @@ func ReadStream(connection Connection, outputFilepath string, isHttp bool, timeo
 	log.Newline()
 	filepath := util.GetFilePath(outputFilepath)
 	if isHttp {
-		log.Info("Http connection to url", connection.Url)
-		ReadHttpLineByLine(connection, filepath, timeout, "", dataValidator)
+		log.Info("Http connection to url", c.Url)
+		c.ReadHttpLineByLine(filepath, timeout, "", dataValidator)
 	} else {
-		log.Info("Socket connection to url", connection.Url)
-		ReadSocket(connection, filepath, timeout, dataValidator)
+		log.Info("Socket connection to url", c.Url)
+		c.ReadSocket(filepath, timeout, dataValidator)
 	}
 }
 
-func ReadSocket(connection Connection, dumpToFile string, timeout time.Duration, dataValidator DataValidator) error {
-	conn, err := getSocketConn(connection)
+func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataValidator DataValidator) error {
+	conn, err := c.GetSocketConn()
 	if err != nil {
 		log.Err(err, "can't dial.")
 		return err
@@ -114,10 +111,10 @@ func ReadSocket(connection Connection, dumpToFile string, timeout time.Duration,
 	return err
 }
 
-func ReadHttpLineByLine(connection Connection, dumpToFile string, timeout time.Duration, bearerToken string, dataValidator DataValidator) error {
+func (c Connection) ReadHttpLineByLine(dumpToFile string, timeout time.Duration, bearerToken string, dataValidator DataValidator) error {
 	// request
 	// build request
-	req, err := http.NewRequest(http.MethodGet, connection.Url, nil)
+	req, err := http.NewRequest(http.MethodGet, c.Url, nil)
 	if err != nil {
 		log.Err(err, "request error.")
 		return err
@@ -130,7 +127,7 @@ func ReadHttpLineByLine(connection Connection, dumpToFile string, timeout time.D
 	}
 
 	// request
-	client, err := getHttpClient(connection, timeout)
+	client, err := c.GetHttpClient(timeout)
 	if err != nil {
 		log.Err(err, "client create error.")
 		return err
@@ -277,36 +274,4 @@ func handleHttpClient(conn net.Conn, dataValidator DataValidator) {
 
 		count++
 	}
-}
-
-func getHttpClient(connection Connection, timeout time.Duration) (*http.Client, error) {
-	client := &http.Client{Timeout: timeout * time.Second}
-
-	if connection.ProxyUrl != "" && connection.ProxyPort != 0 {
-		// via proxy
-		proxyUrl, err := url.Parse("http://" + connection.ProxyUrl + ":" + strconv.Itoa(connection.ProxyPort))
-		if err != nil {
-			log.Err(err, "proxy url")
-			return nil, err
-		}
-		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	}
-	return client, nil
-}
-
-func getSocketConn(connection Connection) (net.Conn, error) {
-	if connection.ProxyUrl == "" || connection.ProxyPort == 0 {
-		addr := connection.Url + ":" + strconv.Itoa(connection.Port)
-		return net.Dial(TCP_PROTO, addr)
-	}
-
-	proxyAddr := connection.ProxyUrl + ":" + strconv.Itoa(connection.ProxyPort)
-	dialer, err := proxy.SOCKS5(TCP_PROTO, proxyAddr, nil, proxy.Direct)
-	if err != nil {
-		log.Err(err, "could not create socks5 proxy")
-		return nil, err
-	}
-
-	addr := connection.Url + ":" + strconv.Itoa(connection.Port)
-	return dialer.Dial(TCP_PROTO, addr)
 }
