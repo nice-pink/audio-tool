@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -87,6 +88,9 @@ func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataVal
 	for {
 		buffer := make([]byte, 1024)
 		bytes, err = conn.Read(buffer)
+		if err == io.EOF {
+			break
+		}
 		if err != nil {
 			log.Err(err, "socket reader can't read.")
 			return err
