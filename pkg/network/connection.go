@@ -28,13 +28,14 @@ func NewConnection(url string, port int) Connection {
 
 func (c Connection) DeepCopy() Connection {
 	return Connection{
-		Url:       c.Url,
-		Port:      c.Port,
-		ProxyUrl:  c.ProxyUrl,
-		ProxyPort: c.ProxyPort,
-		Meta:      c.Meta,
-		SrcInfo:   c.SrcInfo,
-		DestInfo:  c.DestInfo,
+		Url:         c.Url,
+		Port:        c.Port,
+		ProxyUrl:    c.ProxyUrl,
+		ProxyPort:   c.ProxyPort,
+		Meta:        c.Meta,
+		SrcInfo:     c.SrcInfo,
+		DestInfo:    c.DestInfo,
+		VerboseLogs: c.VerboseLogs,
 	}
 }
 
