@@ -19,7 +19,7 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize i
 	// connection
 	conn, err := c.GetSocketConn()
 	if err != nil {
-		log.Error(err, "can't dial.")
+		log.Error(err, "stream sender can't dial.")
 		return err
 	}
 	defer conn.Close()
@@ -115,7 +115,7 @@ func (c Connection) SendFile(filepath string, chunkSize int) error {
 	// connection
 	conn, err := c.GetSocketConn()
 	if err != nil {
-		log.Error(err, "can't dial.")
+		log.Error(err, "file sender can't dial.")
 		return err
 	}
 	defer conn.Close()

@@ -59,7 +59,7 @@ func (c Connection) ReadStream(outputFilepath string, isHttp bool, timeout time.
 func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataValidator DataValidator) error {
 	conn, err := c.GetSocketConn()
 	if err != nil {
-		log.Err(err, "can't dial.")
+		log.Err(err, "socket reader can't get connection.")
 		return err
 	}
 	defer conn.Close()
@@ -88,7 +88,7 @@ func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataVal
 		buffer := make([]byte, 1024)
 		bytes, err = conn.Read(buffer)
 		if err != nil {
-			log.Err(err, "can't dial.")
+			log.Err(err, "socket reader can't read.")
 			return err
 		}
 		if bytes == 0 {

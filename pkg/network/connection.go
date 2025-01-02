@@ -67,6 +67,10 @@ func (c Connection) GetSocketConn() (net.Conn, error) {
 	}
 
 	addr := c.GetAddr()
+	if c.VerboseLogs {
+		log.Info("Use proxy", proxyAddr, "to connect socket to", addr)
+	}
+
 	return dialer.Dial(TCP_PROTO, addr)
 }
 
