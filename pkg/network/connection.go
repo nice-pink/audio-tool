@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -81,4 +82,9 @@ func (c Connection) GetAddr() string {
 
 func (c Connection) GetProxyAddr() string {
 	return c.ProxyUrl + ":" + strconv.Itoa(c.ProxyPort)
+}
+
+func (c Connection) RemoveUrlProtocol() string {
+	reg := regexp.MustCompile("(.*://)(.*)")
+	return reg.ReplaceAllString(c.Url, "${2}")
 }
