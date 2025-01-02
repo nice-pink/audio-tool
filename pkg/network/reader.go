@@ -20,13 +20,18 @@ const (
 )
 
 type DataValidator interface {
-	Validate(data []byte, failEarly bool) error
+	ValidateData(data []byte, failEarly bool) error
+	Validate(failEarly bool) error
 }
 
 type DummyValidator struct {
 }
 
-func (v DummyValidator) Validate(data []byte, failEarly bool) error {
+func (v DummyValidator) ValidateData(data []byte, failEarly bool) error {
+	return nil
+}
+
+func (v DummyValidator) Validate(failEarly bool) error {
 	return nil
 }
 
@@ -114,7 +119,7 @@ func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataVal
 			// skip validation
 			continue
 		}
-		validationErr := dataValidator.Validate(buffer[0:bytes], true)
+		validationErr := dataValidator.ValidateData(buffer[0:bytes], true)
 		if validationErr != nil {
 			return validationErr
 		}
@@ -196,7 +201,7 @@ func (c Connection) ReadHttpLineByLine(dumpToFile string, timeout time.Duration,
 			// skip validation
 			continue
 		}
-		validationErr := dataValidator.Validate(line, true)
+		validationErr := dataValidator.ValidateData(line, true)
 		if validationErr != nil {
 			return validationErr
 		}
@@ -261,7 +266,7 @@ func handleSocketConnection(conn net.Conn, dataVaidator DataValidator) {
 		log.Err(err, "connection read")
 		return
 	}
-	dataVaidator.Validate(buf, true)
+	dataVaidator.ValidateData(buf, true)
 }
 
 func handleHttpClient(conn net.Conn, dataValidator DataValidator) {
@@ -283,7 +288,7 @@ func handleHttpClient(conn net.Conn, dataValidator DataValidator) {
 		readTotal += int64(n)
 
 		// validate
-		dataValidator.Validate(buffer, true)
+		dataValidator.ValidateData(buffer, true)
 
 		// Process and use the data (here, we'll just print it)
 		if count > 20 {
