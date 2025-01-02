@@ -80,5 +80,5 @@ func (c Connection) GetAddr() string {
 }
 
 func (c Connection) GetProxyAddr() string {
-	return c.Url + ":" + strconv.Itoa(c.Port)
+	return c.ProxyUrl + ":" + strconv.Itoa(c.ProxyPort)
 }
