@@ -96,6 +96,10 @@ func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataVal
 		}
 		bytesRead += bytes
 
+		if c.VerboseLogs {
+			log.Info(bytes, "bytes read")
+		}
+
 		// write to file
 		if writeToFile {
 			file.Write(buffer[0:bytes])
@@ -169,6 +173,10 @@ func (c Connection) ReadHttpLineByLine(dumpToFile string, timeout time.Duration,
 			break
 		}
 		bytesRead += uint64(bytesReadCycle)
+
+		if c.VerboseLogs {
+			log.Info(bytesReadCycle, "bytes read")
+		}
 
 		// write to file
 		if writeToFile {

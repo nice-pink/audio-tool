@@ -79,6 +79,10 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize i
 			bytesWrittenTotal += bytesWrittenCycle
 			byteIndex += bytesWrittenCycle
 
+			if c.VerboseLogs {
+				log.Info(bytesWrittenCycle, "bytes written")
+			}
+
 			count++
 		}
 	}
@@ -146,6 +150,10 @@ func (c Connection) SendFile(filepath string, chunkSize int) error {
 			return err
 		}
 		bytesWrittenTotal += bytesWrittenCycle
+
+		if c.VerboseLogs {
+			log.Info(bytesWrittenCycle, "bytes written")
+		}
 	}
 
 	// final log

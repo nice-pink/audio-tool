@@ -12,13 +12,14 @@ import (
 )
 
 type Connection struct {
-	Url       string
-	Port      int
-	ProxyUrl  string
-	ProxyPort int
-	Meta      []byte
-	SrcInfo   string
-	DestInfo  string
+	Url         string
+	Port        int
+	ProxyUrl    string
+	ProxyPort   int
+	Meta        []byte
+	SrcInfo     string
+	DestInfo    string
+	VerboseLogs bool
 }
 
 func NewConnection(url string, port int) Connection {
