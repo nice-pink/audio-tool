@@ -106,6 +106,10 @@ func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataVal
 		}
 
 		// validate
+		if dataValidator == nil {
+			// skip validation
+			continue
+		}
 		validationErr := dataValidator.Validate(buffer[0:bytes], true)
 		if validationErr != nil {
 			return validationErr
@@ -184,6 +188,10 @@ func (c Connection) ReadHttpLineByLine(dumpToFile string, timeout time.Duration,
 		}
 
 		// validate
+		if dataValidator == nil {
+			// skip validation
+			continue
+		}
 		validationErr := dataValidator.Validate(line, true)
 		if validationErr != nil {
 			return validationErr
