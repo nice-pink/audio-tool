@@ -24,7 +24,7 @@ func NewPrivateBitValidator(active bool, audioType AudioType, metricManager *met
 	return &PrivateBitValidator{verbose: verbose, active: active, audioType: audioType, parser: NewParser(), metricManager: metricManager}
 }
 
-func (v *PrivateBitValidator) Validate(data []byte, failEarly bool) error {
+func (v *PrivateBitValidator) Validate(data []byte) error {
 	// bypass?
 	if !v.active {
 		return nil
@@ -85,17 +85,18 @@ func (v *PrivateBitValidator) Validate(data []byte, failEarly bool) error {
 
 type EncodingValidator struct {
 	active        bool
+	failEarly     bool
 	expectations  Expectations
 	verbose       bool
 	metricManager *metricmanager.MetricManager
 	parser        *Parser
 }
 
-func NewEncodingValidator(active bool, expectations Expectations, metricManager *metricmanager.MetricManager, verbose bool) *EncodingValidator {
+func NewEncodingValidator(active, failEarly bool, expectations Expectations, metricManager *metricmanager.MetricManager, verbose bool) *EncodingValidator {
 	return &EncodingValidator{expectations: expectations, verbose: verbose, active: active, metricManager: metricManager, parser: NewParser()}
 }
 
-func (v *EncodingValidator) Validate(data []byte, failEarly bool) error {
+func (v *EncodingValidator) Validate(data []byte) error {
 	// bypass?
 	if !v.active {
 		return nil
@@ -115,14 +116,14 @@ func (v *EncodingValidator) Validate(data []byte, failEarly bool) error {
 
 	// validate audio info
 	isValid := IsValid(v.expectations, *blockAudioInfo, v.metricManager)
-	if !isValid && failEarly {
+	if !isValid && v.failEarly {
 		return errors.New("validation failed")
 	}
 
 	// validate encodings
 	for _, unit := range blockAudioInfo.Units {
 		isValid = IsValidEncoding(v.expectations, unit.Encoding, v.metricManager)
-		if !isValid && failEarly {
+		if !isValid && v.failEarly {
 			return errors.New("validation failed")
 		}
 	}
