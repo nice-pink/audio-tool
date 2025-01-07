@@ -27,7 +27,7 @@ func NewAudioFile(filepath string, loadData, parse bool) *AudioFile {
 	if loadData || parse {
 		data, err := os.ReadFile(filepath)
 		if err != nil {
-			log.Err(err, "could not load file data")
+			log.Err(err, "could not load file data", filepath)
 			return nil
 		}
 		audio.Data = data
