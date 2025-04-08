@@ -12,6 +12,22 @@ import (
 	"golang.org/x/net/proxy"
 )
 
+func GetHttpClient(proxyUrl string, proxyPort int, timeout time.Duration) (*http.Client, error) {
+	client := &http.Client{Timeout: timeout * time.Second}
+
+	if proxyUrl != "" && proxyPort != 0 {
+		// via proxy
+		pUrl := "http://" + proxyUrl + ":" + strconv.Itoa(proxyPort)
+		proxyUrl, err := url.Parse(pUrl)
+		if err != nil {
+			log.Err(err, "proxy url")
+			return nil, err
+		}
+		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	}
+	return client, nil
+}
+
 type Connection struct {
 	Url         string
 	Port        int
@@ -21,10 +37,19 @@ type Connection struct {
 	SrcInfo     string
 	DestInfo    string
 	VerboseLogs bool
+	timeout     time.Duration
+	httpClient  *http.Client
 }
 
-func NewConnection(url string, port int) Connection {
-	return Connection{Url: url, Port: port}
+func NewConnection(url, proxyUrl string, port, proxyPort int, timeout time.Duration, httpClient *http.Client) *Connection {
+	return &Connection{
+		Url:        url,
+		Port:       port,
+		ProxyUrl:   proxyUrl,
+		ProxyPort:  proxyPort,
+		httpClient: httpClient,
+		timeout:    timeout,
+	}
 }
 
 func (c Connection) DeepCopy() Connection {
@@ -40,22 +65,7 @@ func (c Connection) DeepCopy() Connection {
 	}
 }
 
-func (c Connection) GetHttpClient(timeout time.Duration) (*http.Client, error) {
-	client := &http.Client{Timeout: timeout * time.Second}
-
-	if c.ProxyUrl != "" && c.ProxyPort != 0 {
-		// via proxy
-		proxyUrl, err := url.Parse("http://" + c.GetProxyAddr())
-		if err != nil {
-			log.Err(err, "proxy url")
-			return nil, err
-		}
-		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	}
-	return client, nil
-}
-
-func (c Connection) GetSocketConn() (net.Conn, error) {
+func (c *Connection) GetSocketConn() (net.Conn, error) {
 	if c.ProxyUrl == "" || c.ProxyPort == 0 {
 		addr := c.GetAddr()
 		return net.Dial(TCP_PROTO, addr)
@@ -76,15 +86,15 @@ func (c Connection) GetSocketConn() (net.Conn, error) {
 	return dialer.Dial(TCP_PROTO, addr)
 }
 
-func (c Connection) GetAddr() string {
+func (c *Connection) GetAddr() string {
 	return c.Url + ":" + strconv.Itoa(c.Port)
 }
 
-func (c Connection) GetProxyAddr() string {
+func (c *Connection) GetProxyAddr() string {
 	return c.ProxyUrl + ":" + strconv.Itoa(c.ProxyPort)
 }
 
-func (c Connection) RemoveUrlProtocol() string {
+func (c *Connection) RemoveUrlProtocol() string {
 	reg := regexp.MustCompile("(.*://)(.*)")
 	return reg.ReplaceAllString(c.Url, "${2}")
 }

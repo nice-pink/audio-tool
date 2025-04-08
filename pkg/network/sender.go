@@ -4,13 +4,25 @@ import (
 	"bufio"
 	"errors"
 	"math"
+	"net"
 	"os"
 	"time"
 
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
-func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int) error {
+type CompletionHandler func() error
+
+type StreamBufferStatus struct {
+	sendBitRate       float64
+	bufferLen         int
+	chunkSize         int
+	bytesWrittenTotal int64
+	streamStart       int64
+	loopCount         int
+}
+
+func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, completionFn CompletionHandler) error {
 	// if sendBitRate == 0, then send as quick as possible
 
 	addr := c.GetAddr()
@@ -24,21 +36,52 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize i
 	}
 	defer conn.Close()
 
+	status := &StreamBufferStatus{
+		bufferLen:         len(buffer),
+		sendBitRate:       sendBitRate,
+		chunkSize:         chunkSize,
+		bytesWrittenTotal: 0,
+		streamStart:       time.Now().UnixNano(),
+		loopCount:         0,
+	}
+
+	// run loop
+	if endless {
+		for {
+			err = c.streamBufferLoop(conn, buffer, status, initialFn, completionFn)
+			if err != nil {
+				log.Err(err, "stream buffer loop error")
+				break
+			}
+		}
+	} else {
+		err = c.streamBufferLoop(conn, buffer, status, initialFn, completionFn)
+		log.Err(err, "stream buffer loop error")
+	}
+
+	// final log
+	streamStop := time.Now().UnixNano()
+	passed := status.streamStart - streamStop
+	log.Info("Stopped sending. Bytes:", status.bytesWrittenTotal, ". Seconds:", passed)
+	return err
+}
+
+func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *StreamBufferStatus, initialFn, completionFn CompletionHandler) error {
 	// variables
-	var bytesWrittenCycle int = 0
-	var bytesWrittenTotal int = 0
-	streamStart := time.Now().UnixNano()
+	var err error
 	var byteIndex int = 0
-	// var byteSegmentSize int64 = 1024
-	bufferLen := len(buffer)
-	// loopCount := 0
+	var bytesWrittenCycle int = 0
 
 	// run loop
 	var max int
 	var dist int
 	var count int = 1
 	for {
-		if byteIndex >= bufferLen {
+		if byteIndex == 0 {
+			if initialFn != nil {
+				initialFn()
+			}
+		} else if byteIndex >= status.bufferLen {
 			// log.Info("Start loop", loopCount)
 			// byteIndex = 0
 			// count = 1
@@ -46,21 +89,25 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize i
 			// if loops > 0 && loopCount >= loops {
 			// 	break
 			// }
+			status.loopCount++
+			if completionFn != nil {
+				completionFn()
+			}
 			break
 		}
 
 		var rate float64 = -1
-		if sendBitRate > 0 {
+		if status.sendBitRate > 0 {
 			/*
 			* calculate our instant rate over the entire transmit
 			* duration
 			 */
-			rate = ((float64)(bytesWrittenTotal * 8)) / ((float64)(time.Now().UnixNano()-streamStart) / 1000000000)
+			rate = ((float64)(status.bytesWrittenTotal * 8)) / ((float64)(time.Now().UnixNano()-status.streamStart) / 1000000000)
 		}
 
 		// compare rate
-		if rate < sendBitRate {
-			max = min(bufferLen, count*int(chunkSize))
+		if rate < status.sendBitRate {
+			max = min(status.bufferLen, count*status.chunkSize)
 			dist = max - byteIndex
 			// send data
 			bytesWrittenCycle, err = conn.Write(buffer[byteIndex:max])
@@ -76,7 +123,7 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize i
 				log.Error("not all bytes sent. Should", dist, ", did", bytesWrittenCycle)
 				return errors.New("not all data sent")
 			}
-			bytesWrittenTotal += bytesWrittenCycle
+			status.bytesWrittenTotal += int64(bytesWrittenCycle)
 			byteIndex += bytesWrittenCycle
 
 			if c.VerboseLogs {
@@ -86,11 +133,6 @@ func (c Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize i
 			count++
 		}
 	}
-
-	// final log
-	streamStop := time.Now().UnixNano()
-	passed := streamStart - streamStop
-	log.Info("Stopped sending. Bytes:", bytesWrittenTotal, ". Seconds:", passed)
 	return nil
 }
 
