@@ -22,7 +22,7 @@ type StreamBufferStatus struct {
 	loopCount         int
 }
 
-func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, completionFn CompletionHandler) error {
+func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn CompletionHandler) error {
 	// if sendBitRate == 0, then send as quick as possible
 
 	addr := c.GetAddr()
@@ -36,6 +36,12 @@ func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize 
 	}
 	defer conn.Close()
 
+	// initial function
+	if initialFn != nil {
+		initialFn()
+	}
+
+	// status
 	status := &StreamBufferStatus{
 		bufferLen:         len(buffer),
 		sendBitRate:       sendBitRate,
@@ -47,15 +53,17 @@ func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize 
 
 	// run loop
 	if endless {
+		// endless
 		for {
-			err = c.streamBufferLoop(conn, buffer, status, initialFn, completionFn)
+			err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
 			if err != nil {
 				log.Err(err, "stream buffer loop error")
 				break
 			}
 		}
 	} else {
-		err = c.streamBufferLoop(conn, buffer, status, initialFn, completionFn)
+		// single run
+		err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
 		log.Err(err, "stream buffer loop error")
 	}
 
@@ -66,7 +74,7 @@ func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize 
 	return err
 }
 
-func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *StreamBufferStatus, initialFn, completionFn CompletionHandler) error {
+func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *StreamBufferStatus, loopInitialFn, loopCompletionFn CompletionHandler) error {
 	// variables
 	var err error
 	var byteIndex int = 0
@@ -78,8 +86,8 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 	var count int = 1
 	for {
 		if byteIndex == 0 {
-			if initialFn != nil {
-				initialFn()
+			if loopInitialFn != nil {
+				loopInitialFn()
 			}
 		} else if byteIndex >= status.bufferLen {
 			// log.Info("Start loop", loopCount)
@@ -90,8 +98,8 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 			// 	break
 			// }
 			status.loopCount++
-			if completionFn != nil {
-				completionFn()
+			if loopCompletionFn != nil {
+				loopCompletionFn()
 			}
 			break
 		}
