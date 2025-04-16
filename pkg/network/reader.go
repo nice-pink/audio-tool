@@ -21,7 +21,7 @@ const (
 
 type DataValidator interface {
 	ValidateData(data []byte) error
-	Validate() error
+	// Validate() error
 }
 
 type DummyValidator struct {
@@ -31,9 +31,9 @@ func (v DummyValidator) ValidateData(data []byte) error {
 	return nil
 }
 
-func (v DummyValidator) Validate() error {
-	return nil
-}
+// func (v DummyValidator) Validate() error {
+// 	return nil
+// }
 
 // read stream
 
