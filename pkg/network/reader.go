@@ -37,7 +37,7 @@ func (v DummyValidator) Validate() error {
 
 // read stream
 
-func (c Connection) ReadStream(outputFilepath string, dataValidator DataValidator) {
+func (c Connection) ReadStream(outputFilepath string, reconnect bool, dataValidator DataValidator) {
 	// early exit
 	if c.url == "" {
 		log.Newline()
@@ -51,14 +51,21 @@ func (c Connection) ReadStream(outputFilepath string, dataValidator DataValidato
 		log.Info("Dump data to file:", outputFilepath)
 	}
 
-	log.Newline()
-	filepath := util.GetFilePath(outputFilepath)
-	if c.connectionType == HttpConnection {
-		log.Info("Http connection to url", c.url)
-		c.ReadHttpLineByLine(filepath, "", dataValidator)
-	} else {
-		log.Info("Socket connection to url", c.url)
-		c.ReadSocket(filepath, c.timeout, dataValidator)
+	for {
+		var err error
+		log.Newline()
+		filepath := util.GetFilePath(outputFilepath)
+		if c.connectionType == HttpConnection {
+			log.Info("Http connection to url", c.url)
+			err = c.ReadHttpLineByLine(filepath, "", dataValidator)
+		} else {
+			log.Info("Socket connection to url", c.url)
+			err = c.ReadSocket(filepath, c.timeout, dataValidator)
+		}
+
+		if !reconnect && err != nil {
+			break
+		}
 	}
 }
 
