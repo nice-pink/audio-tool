@@ -37,9 +37,9 @@ func (v DummyValidator) Validate() error {
 
 // read stream
 
-func (c Connection) ReadStream(outputFilepath string, isHttp bool, dataValidator DataValidator) {
+func (c Connection) ReadStream(outputFilepath string, dataValidator DataValidator) {
 	// early exit
-	if c.Url == "" {
+	if c.url == "" {
 		log.Newline()
 		log.Error("Define url!")
 		flag.Usage()
@@ -53,17 +53,17 @@ func (c Connection) ReadStream(outputFilepath string, isHttp bool, dataValidator
 
 	log.Newline()
 	filepath := util.GetFilePath(outputFilepath)
-	if isHttp {
-		log.Info("Http connection to url", c.Url)
+	if c.connectionType == HttpConnection {
+		log.Info("Http connection to url", c.url)
 		c.ReadHttpLineByLine(filepath, "", dataValidator)
 	} else {
-		log.Info("Socket connection to url", c.Url)
+		log.Info("Socket connection to url", c.url)
 		c.ReadSocket(filepath, c.timeout, dataValidator)
 	}
 }
 
 func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataValidator DataValidator) error {
-	conn, err := c.GetSocketConn()
+	conn, err := c.getSocketConn()
 	if err != nil {
 		log.Err(err, "socket reader can't get connection.")
 		return err
@@ -132,7 +132,7 @@ func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataVal
 func (c Connection) ReadHttpLineByLine(dumpToFile string, bearerToken string, dataValidator DataValidator) error {
 	// request
 	// build request
-	req, err := http.NewRequest(http.MethodGet, c.Url, nil)
+	req, err := http.NewRequest(http.MethodGet, c.url, nil)
 	if err != nil {
 		log.Err(err, "request error.")
 		return err

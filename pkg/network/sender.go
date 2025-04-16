@@ -29,7 +29,7 @@ func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize 
 	log.Info("Stream data to", addr, "with bitrate", sendBitRate)
 
 	// connection
-	conn, err := c.GetSocketConn()
+	conn, err := c.getSocketConn()
 	if err != nil {
 		log.Error(err, "stream sender can't dial.")
 		return err
@@ -155,7 +155,7 @@ func (c Connection) SendFile(filepath string, chunkSize int) error {
 	reader := bufio.NewReader(file)
 
 	// connection
-	conn, err := c.GetSocketConn()
+	conn, err := c.getSocketConn()
 	if err != nil {
 		log.Error(err, "file sender can't dial.")
 		return err
