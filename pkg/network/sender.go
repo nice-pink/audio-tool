@@ -22,19 +22,11 @@ type StreamBufferStatus struct {
 	loopCount         int
 }
 
-func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn CompletionHandler) error {
+func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn CompletionHandler) error {
 	// if sendBitRate == 0, then send as quick as possible
 
 	addr := c.GetAddr()
 	log.Info("Stream data to", addr, "with bitrate", sendBitRate)
-
-	// connection
-	conn, err := c.getSocketConn()
-	if err != nil {
-		log.Error(err, "stream sender can't dial.")
-		return err
-	}
-	defer conn.Close()
 
 	// initial function
 	if initialFn != nil {
@@ -52,6 +44,7 @@ func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize 
 	}
 
 	// run loop
+	var err error
 	if endless {
 		// endless
 		for {
@@ -163,7 +156,7 @@ func (c Connection) SendFile(filepath string, chunkSize int) error {
 	reader := bufio.NewReader(file)
 
 	// connection
-	conn, err := c.getSocketConn()
+	conn, err := c.GetSocketConn()
 	if err != nil {
 		log.Error(err, "file sender can't dial.")
 		return err

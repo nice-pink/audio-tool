@@ -90,7 +90,7 @@ func (c *Connection) getHttpClient() (*http.Client, error) {
 	return c.httpClient, nil
 }
 
-func (c *Connection) getSocketConn() (net.Conn, error) {
+func (c *Connection) GetSocketConn() (net.Conn, error) {
 	if c.proxyUrl == "" || c.proxyPort == 0 {
 		addr := c.GetAddr()
 		return net.Dial(TCP_PROTO, addr)

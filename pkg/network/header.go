@@ -8,7 +8,7 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
-func writeHeader(conn net.Conn, headerBuffer []byte, retry int, httpVersion string, validate bool) bool {
+func WriteHeader(conn net.Conn, headerBuffer []byte, retry int, httpVersion string, validate bool) bool {
 	for counter := 0; counter < retry; counter++ {
 		n, err := conn.Write(headerBuffer)
 		if err != nil {
