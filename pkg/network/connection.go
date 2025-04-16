@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/nice-pink/audio-tool/pkg/util"
 	"github.com/nice-pink/goutil/pkg/log"
 	"golang.org/x/net/proxy"
 )
@@ -31,9 +32,10 @@ type Connection struct {
 	timeout        time.Duration
 	connectionType ConnectionType
 	httpClient     *http.Client
+	metrics        *Metrics
 }
 
-func NewConnection(url, proxyUrl string, port, proxyPort int, timeout time.Duration, connectionType ConnectionType) *Connection {
+func NewConnection(url, proxyUrl string, port, proxyPort int, timeout time.Duration, connectionType ConnectionType, metrics util.MetricsControl) *Connection {
 	// get connection
 	c := &Connection{
 		url:       url,
@@ -43,8 +45,14 @@ func NewConnection(url, proxyUrl string, port, proxyPort int, timeout time.Durat
 		timeout:   timeout,
 	}
 
+	// init http connection
 	if connectionType == HttpConnection {
 		c.getHttpClient()
+	}
+
+	// init metrics
+	if metrics.Enabled {
+		c.metrics = NewMetrics(metrics.Prefix, metrics.Labels)
 	}
 
 	return c
