@@ -11,8 +11,6 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
-type CompletionHandler func() error
-
 type StreamBufferStatus struct {
 	sendBitRate       float64
 	bufferLen         int
@@ -22,7 +20,7 @@ type StreamBufferStatus struct {
 	loopCount         int
 }
 
-func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn CompletionHandler) error {
+func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn func() error) error {
 	// if sendBitRate == 0, then send as quick as possible
 
 	addr := c.GetAddr()
@@ -67,7 +65,7 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 	return err
 }
 
-func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *StreamBufferStatus, loopInitialFn, loopCompletionFn CompletionHandler) error {
+func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *StreamBufferStatus, loopInitialFn, loopCompletionFn func() error) error {
 	// variables
 	var err error
 	var byteIndex int = 0
