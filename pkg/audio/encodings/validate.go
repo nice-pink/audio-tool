@@ -35,7 +35,7 @@ func NewPrivateBitValidator(active bool, audioType AudioType, metrics util.Metri
 	return p
 }
 
-func (v *PrivateBitValidator) Validate(data []byte) error {
+func (v *PrivateBitValidator) ValidateData(data []byte) error {
 	// bypass?
 	if !v.active {
 		return nil
@@ -117,7 +117,7 @@ func NewEncodingValidator(active, failEarly bool, expectations Expectations, met
 	return e
 }
 
-func (v *EncodingValidator) Validate(data []byte) error {
+func (v *EncodingValidator) ValidateData(data []byte) error {
 	// bypass?
 	if !v.active {
 		return nil
