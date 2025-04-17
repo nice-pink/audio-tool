@@ -26,11 +26,6 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 	addr := c.GetAddr()
 	log.Info("Stream data to", addr, "with bitrate", sendBitRate)
 
-	// initial function
-	if initialFn != nil {
-		initialFn()
-	}
-
 	// status
 	status := &StreamBufferStatus{
 		bufferLen:         len(buffer),
@@ -46,6 +41,11 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 	if endless {
 		// endless
 		for {
+			// initial function
+			if initialFn != nil {
+				initialFn()
+			}
+
 			err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
 			if err != nil {
 				log.Err(err, "stream buffer loop error")
@@ -53,6 +53,11 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 			}
 		}
 	} else {
+		// initial function
+		if initialFn != nil {
+			initialFn()
+		}
+
 		// single run
 		err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
 		log.Err(err, "stream buffer loop error")
