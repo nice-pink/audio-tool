@@ -82,9 +82,10 @@ func (c *Connection) getHttpClient() (*http.Client, error) {
 		pUrl := "http://" + c.proxyUrl + ":" + strconv.Itoa(c.proxyPort)
 		proxyUrl, err := url.Parse(pUrl)
 		if err != nil {
-			log.Err(err, "proxy url")
+			log.Err(err, "proxy url", pUrl)
 			return nil, err
 		}
+		log.Info("Use proxy", proxyUrl)
 		c.httpClient.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
 	}
 	return c.httpClient, nil
@@ -99,7 +100,7 @@ func (c *Connection) GetSocketConn() (net.Conn, error) {
 	proxyAddr := c.GetProxyAddr()
 	dialer, err := proxy.SOCKS5(TCP_PROTO, proxyAddr, nil, proxy.Direct)
 	if err != nil {
-		log.Err(err, "could not create socks5 proxy")
+		log.Err(err, "could not create socks5 proxy", proxyAddr)
 		return nil, err
 	}
 
