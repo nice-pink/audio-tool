@@ -19,6 +19,23 @@ func GetFilePath(baseFilePath string) string {
 	return baseFilePath + "_" + strconv.FormatInt(now.Unix(), 10)
 }
 
+func WriteDataToFile(data []byte, filepath string) error {
+	file, err := os.Create(filepath)
+	if err != nil {
+		fmt.Println("create file", filepath, err.Error())
+		return err
+	}
+
+	n, err := file.Write(data)
+	if err != nil {
+		fmt.Println("write file", filepath, err.Error())
+		return err
+	}
+
+	fmt.Println(n, "byte written to", filepath)
+	return nil
+}
+
 func CleanUp(folder string, sec int64, ignoreHiddenFiles bool, delete bool) {
 	// get files
 	files := filesystem.ListFiles(folder, sec, ignoreHiddenFiles)

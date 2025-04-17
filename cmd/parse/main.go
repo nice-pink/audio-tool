@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	filepath := flag.String("filepath", "", "Filepath")
+	input := flag.String("input", "", "Filepath")
 	block := flag.Bool("block", false, "Parse file in blocks.")
 	repeatBlock := flag.Int("n", 0, "Repeat blocks.")
 	verbose := flag.Bool("verbose", false, "Make output verbose.")
@@ -18,12 +18,12 @@ func main() {
 
 	// get file data
 
-	if *filepath == "" {
+	if *input == "" {
 		flag.Usage()
 		os.Exit(2)
 	}
 
-	file, err := os.Open(*filepath)
+	file, err := os.Open(*input)
 	if err != nil {
 		log.Err(err, "Cannot open file.")
 	}
@@ -34,13 +34,13 @@ func main() {
 	}
 
 	if *block {
-		guessedAudioType := encodings.GuessAudioType(*filepath)
+		guessedAudioType := encodings.GuessAudioType(*input)
 		// parse continuously
 		Blockwise(data, guessedAudioType, *repeatBlock, *verbose)
 	} else {
 		// parse audio
 		parser := encodings.NewParser()
-		parser.Parse(data, *filepath, false, *verbose, true)
+		parser.Parse(data, *input, false, *verbose, true)
 	}
 }
 
