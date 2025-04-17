@@ -70,7 +70,7 @@ func (c Connection) ReadStream(outputFilepath string, reconnect bool, dataValida
 }
 
 func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataValidator DataValidator) error {
-	conn, err := c.getSocketConn()
+	conn, err := c.GetSocketConn()
 	if err != nil {
 		log.Err(err, "socket reader can't get connection.")
 		return err
