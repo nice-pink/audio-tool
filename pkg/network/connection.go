@@ -97,7 +97,7 @@ func (c *Connection) GetSocketConn(isTls bool) (net.Conn, error) {
 
 	if isTls {
 		log.Info("Use tls - no proxy!")
-		tls.Dial(TCP_PROTO, addr, &tls.Config{
+		return tls.Dial(TCP_PROTO, addr, &tls.Config{
 			InsecureSkipVerify: true,
 		})
 	}
