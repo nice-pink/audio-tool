@@ -71,13 +71,13 @@ func isValidResponse(data []byte, httpVersion string) bool {
 		return false
 	}
 
-	code := strings.Split(split[1], " ")
-	if len(code) < 2 {
+	code := strings.Split(split[0], " ")
+	if len(code) < 3 {
 		log.Error("no valid status code in", dataString, "\n", code)
 		return false
 	}
 
-	if val, err := strconv.Atoi(code[0]); err == nil {
+	if val, err := strconv.Atoi(code[1]); err == nil {
 		if val < 300 {
 			return true
 		}
