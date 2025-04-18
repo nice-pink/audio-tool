@@ -27,8 +27,7 @@ func WriteHeader(conn net.Conn, headerBuffer []byte, retry int, httpVersion stri
 			return true
 		}
 
-		isValid := validateResponse(conn, httpVersion, allowEmpty)
-		if isValid {
+		if validateResponse(conn, httpVersion, allowEmpty) {
 			return true
 		}
 	}
@@ -74,7 +73,8 @@ func isValidResponse(data []byte, httpVersion string) bool {
 
 	code := strings.Split(split[1], " ")
 	if len(code) < 2 {
-		log.Error("no valid status code in", dataString)
+		log.Error("no valid status code in", dataString, "\n", code)
+		return false
 	}
 
 	if val, err := strconv.Atoi(code[0]); err == nil {
@@ -89,5 +89,7 @@ func isValidResponse(data []byte, httpVersion string) bool {
 	// 	}
 	// }
 	// log.Error("No 100 Continue!")
+
+	log.Error("invalid response", dataString)
 	return false
 }
