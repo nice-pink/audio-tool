@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/nice-pink/audio-tool/pkg/util"
@@ -71,13 +70,11 @@ func (c Connection) ReadStream(outputFilepath string, reconnect bool, dataValida
 }
 
 func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataValidator DataValidator) error {
-	isTls := strings.HasPrefix(c.url, "https://")
-	conn, err := c.GetSocketConn(isTls)
+	_, err := c.GetSocketConn()
 	if err != nil {
 		log.Err(err, "socket reader can't get connection.")
 		return err
 	}
-	defer conn.Close()
 
 	// open file
 	writeToFile := false
@@ -101,7 +98,7 @@ func (c Connection) ReadSocket(dumpToFile string, timeout time.Duration, dataVal
 	var bytes int = 0
 	for {
 		buffer := make([]byte, 1024)
-		bytes, err = conn.Read(buffer)
+		bytes, err = c.socketConn.Read(buffer)
 		if err == io.EOF {
 			// done receiving
 			return nil

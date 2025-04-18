@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/nice-pink/audio-tool/pkg/util"
@@ -33,6 +34,7 @@ type Connection struct {
 	timeout        time.Duration
 	connectionType ConnectionType
 	httpClient     *http.Client
+	socketConn     net.Conn
 	metrics        *Metrics
 }
 
@@ -57,6 +59,12 @@ func NewConnection(url, proxyUrl string, port, proxyPort int, timeout time.Durat
 	}
 
 	return c
+}
+
+func (c *Connection) Close() {
+	if c.socketConn != nil {
+		c.socketConn.Close()
+	}
 }
 
 func (c Connection) DeepCopy() Connection {
@@ -92,18 +100,23 @@ func (c *Connection) getHttpClient() (*http.Client, error) {
 	return c.httpClient, nil
 }
 
-func (c *Connection) GetSocketConn(isTls bool) (net.Conn, error) {
+func (c *Connection) GetSocketConn() (net.Conn, error) {
 	addr := c.GetAddr()
+	var err error
 
-	if isTls {
+	if strings.HasPrefix(c.url, "https://") {
+		// is tls connection (https)
 		log.Info("Use tls - no proxy!")
-		return tls.Dial(TCP_PROTO, addr, &tls.Config{
+		c.socketConn, err = tls.Dial(TCP_PROTO, addr, &tls.Config{
 			InsecureSkipVerify: true,
 		})
+		return c.socketConn, err
 	}
 
 	if c.proxyUrl == "" || c.proxyPort == 0 {
-		return net.Dial(TCP_PROTO, addr)
+		// no proxy
+		c.socketConn, err = net.Dial(TCP_PROTO, addr)
+		return c.socketConn, err
 	}
 
 	// setup proxy
@@ -117,7 +130,8 @@ func (c *Connection) GetSocketConn(isTls bool) (net.Conn, error) {
 	if c.VerboseLogs {
 		log.Info("Use proxy", proxyAddr, "to connect socket to", addr)
 	}
-	return dialer.Dial(TCP_PROTO, addr)
+	c.socketConn, err = dialer.Dial(TCP_PROTO, addr)
+	return c.socketConn, err
 }
 
 func (c *Connection) GetAddr() string {

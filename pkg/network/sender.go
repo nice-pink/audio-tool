@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"math"
-	"net"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/nice-pink/goutil/pkg/log"
@@ -21,7 +19,7 @@ type StreamBufferStatus struct {
 	loopCount         int
 }
 
-func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn func() error) error {
+func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn func() error) error {
 	// status
 	status := &StreamBufferStatus{
 		bufferLen:         len(buffer),
@@ -42,9 +40,11 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 				initialFn()
 			}
 
-			err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
+			err = c.streamBufferLoop(buffer, status, loopInitialFn, loopCompletionFn)
 			if err != nil {
 				log.Err(err, "stream buffer loop error")
+				c.socketConn.Close()
+
 			}
 		}
 	} else {
@@ -54,9 +54,20 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 		}
 
 		// single run
-		err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
+		err = c.streamBufferLoop(buffer, status, loopInitialFn, loopCompletionFn)
 		if err != nil {
 			log.Err(err, "stream buffer loop error")
+			// socket might be broken -> reinit
+			c.socketConn.Close()
+			for {
+				// forever retry to create connection
+				_, err = c.GetSocketConn()
+				if err == nil {
+					break
+				}
+				time.Sleep(1 * time.Second)
+			}
+
 		}
 	}
 
@@ -67,7 +78,7 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 	return err
 }
 
-func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *StreamBufferStatus, loopInitialFn, loopCompletionFn func() error) error {
+func (c *Connection) streamBufferLoop(buffer []byte, status *StreamBufferStatus, loopInitialFn, loopCompletionFn func() error) error {
 	// variables
 	var err error
 	var byteIndex int = 0
@@ -110,7 +121,7 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 			max = min(status.bufferLen, count*status.chunkSize)
 			dist = max - byteIndex
 			// send data
-			bytesWrittenCycle, err = conn.Write(buffer[byteIndex:max])
+			bytesWrittenCycle, err = c.socketConn.Write(buffer[byteIndex:max])
 			if err != nil {
 				log.Error(err, "could not send data.")
 				return err
@@ -136,7 +147,6 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 }
 
 func (c Connection) SendFile(filepath string, chunkSize int) error {
-	isTls := strings.HasPrefix(c.url, "https://")
 	addr := c.GetAddr()
 	log.Info("Send file", filepath, "to", addr)
 
@@ -155,7 +165,7 @@ func (c Connection) SendFile(filepath string, chunkSize int) error {
 	reader := bufio.NewReader(file)
 
 	// connection
-	conn, err := c.GetSocketConn(isTls)
+	conn, err := c.GetSocketConn()
 	if err != nil {
 		log.Error(err, "file sender can't dial.")
 		return err
