@@ -16,8 +16,7 @@ type IcyMeta struct {
 func GetIcecastPutHeader(connTarget ConnTarget, meta IcyMeta, httpVersion string) ([]byte, error) {
 	header := "PUT " + connTarget.MountPoint + " HTTP/" + httpVersion + "\n" +
 		"Host: " + connTarget.Domain + ":" + connTarget.Port + "\n" +
-		"User-Agent: " + connTarget.UserAgent + "\n" +
-		"Connection: close"
+		"User-Agent: " + connTarget.UserAgent + "\n"
 	if connTarget.BasicAuth != "" {
 		header += "Authorization: Basic " + connTarget.BasicAuth + "\n"
 	}
