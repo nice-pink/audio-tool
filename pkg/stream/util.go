@@ -32,6 +32,13 @@ func GetConnTarget(fullUrl string) (ConnTarget, error) {
 	scheme := full.Scheme
 	mountPoint := full.Path
 	port := full.Port()
+	if port == "" {
+		if strings.HasPrefix(fullUrl, "https://") {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
 	password, hasPassword := full.User.Password()
 	basicAuth := ""
 	if hasPassword {
