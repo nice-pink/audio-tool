@@ -26,7 +26,7 @@ func WriteHeader(conn net.Conn, headerBuffer []byte, retry int, httpVersion stri
 			return true
 		}
 
-		isValid := validateResponse(conn, httpVersion)
+		isValid := validateResponse(conn, httpVersion, allowEmpty)
 		if isValid {
 			return true
 		}
