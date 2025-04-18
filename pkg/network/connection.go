@@ -1,6 +1,7 @@
 package network
 
 import (
+	"crypto/tls"
 	"net"
 	"net/http"
 	"net/url"
@@ -91,12 +92,21 @@ func (c *Connection) getHttpClient() (*http.Client, error) {
 	return c.httpClient, nil
 }
 
-func (c *Connection) GetSocketConn() (net.Conn, error) {
+func (c *Connection) GetSocketConn(isTls bool) (net.Conn, error) {
+	addr := c.GetAddr()
+
+	if isTls {
+		log.Info("Use tls - no proxy!")
+		tls.Dial(TCP_PROTO, addr, &tls.Config{
+			InsecureSkipVerify: true,
+		})
+	}
+
 	if c.proxyUrl == "" || c.proxyPort == 0 {
-		addr := c.GetAddr()
 		return net.Dial(TCP_PROTO, addr)
 	}
 
+	// setup proxy
 	proxyAddr := c.GetProxyAddr()
 	dialer, err := proxy.SOCKS5(TCP_PROTO, proxyAddr, nil, proxy.Direct)
 	if err != nil {
@@ -104,11 +114,9 @@ func (c *Connection) GetSocketConn() (net.Conn, error) {
 		return nil, err
 	}
 
-	addr := c.GetAddr()
 	if c.VerboseLogs {
 		log.Info("Use proxy", proxyAddr, "to connect socket to", addr)
 	}
-
 	return dialer.Dial(TCP_PROTO, addr)
 }
 
