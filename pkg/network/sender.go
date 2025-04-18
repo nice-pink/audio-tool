@@ -56,7 +56,9 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 
 		// single run
 		err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
-		log.Err(err, "stream buffer loop error")
+		if err != nil {
+			log.Err(err, "stream buffer loop error")
+		}
 	}
 
 	// final log
@@ -93,7 +95,6 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 			if loopCompletionFn != nil {
 				loopCompletionFn()
 			}
-			break
 		}
 
 		var rate float64 = -1
