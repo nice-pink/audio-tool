@@ -6,6 +6,7 @@ import (
 	"math"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/nice-pink/goutil/pkg/log"
@@ -136,6 +137,7 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 }
 
 func (c Connection) SendFile(filepath string, chunkSize int) error {
+	isTls := strings.HasPrefix(c.url, "https://")
 	addr := c.GetAddr()
 	log.Info("Send file", filepath, "to", addr)
 
@@ -154,7 +156,7 @@ func (c Connection) SendFile(filepath string, chunkSize int) error {
 	reader := bufio.NewReader(file)
 
 	// connection
-	conn, err := c.GetSocketConn()
+	conn, err := c.GetSocketConn(isTls)
 	if err != nil {
 		log.Error(err, "file sender can't dial.")
 		return err
