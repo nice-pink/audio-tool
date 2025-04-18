@@ -45,7 +45,6 @@ func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate floa
 			err = c.streamBufferLoop(conn, buffer, status, loopInitialFn, loopCompletionFn)
 			if err != nil {
 				log.Err(err, "stream buffer loop error")
-				break
 			}
 		}
 	} else {
@@ -83,7 +82,7 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 			if loopInitialFn != nil {
 				loopInitialFn()
 			}
-		} else if byteIndex >= status.bufferLen {
+		} else if byteIndex >= status.bufferLen-1 {
 			// log.Info("Start loop", loopCount)
 			// byteIndex = 0
 			// count = 1
@@ -134,7 +133,6 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 			count++
 		}
 	}
-	return nil
 }
 
 func (c Connection) SendFile(filepath string, chunkSize int) error {
