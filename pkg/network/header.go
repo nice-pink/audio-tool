@@ -49,7 +49,11 @@ func validateResponse(conn net.Conn, httpVersion string, allowEmpty bool) bool {
 		}
 
 		log.Info("Read header response bytes", n)
-		time.Sleep(time.Duration(2) * time.Second)
+		if allowEmpty {
+			return true
+		}
+
+		time.Sleep(time.Duration(1) * time.Second)
 	}
 
 }
