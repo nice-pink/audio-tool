@@ -36,7 +36,7 @@ func WriteHeader(conn net.Conn, headerBuffer []byte, retry int, httpVersion stri
 
 func validateResponse(conn net.Conn, httpVersion string, allowEmpty bool) bool {
 	// read and validate response
-	var data []byte
+	data := make([]byte, 1024)
 	for {
 		n, err := conn.Read(data)
 		if err != nil {
