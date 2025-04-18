@@ -84,7 +84,7 @@ func (c *Connection) streamBufferLoop(conn net.Conn, buffer []byte, status *Stre
 			}
 		} else if byteIndex >= status.bufferLen-1 {
 			// log.Info("Start loop", loopCount)
-			// byteIndex = 0
+			byteIndex = 0
 			// count = 1
 			// loopCount++
 			// if loops > 0 && loopCount >= loops {
