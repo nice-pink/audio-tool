@@ -21,11 +21,6 @@ type StreamBufferStatus struct {
 }
 
 func (c *Connection) StreamBuffer(conn net.Conn, buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn func() error) error {
-	// if sendBitRate == 0, then send as quick as possible
-
-	addr := c.GetAddr()
-	log.Info("Stream data to", addr, "with bitrate", sendBitRate)
-
 	// status
 	status := &StreamBufferStatus{
 		bufferLen:         len(buffer),
