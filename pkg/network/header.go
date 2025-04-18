@@ -2,6 +2,7 @@ package network
 
 import (
 	"net"
+	"strconv"
 	"strings"
 	"time"
 
@@ -66,17 +67,27 @@ func isValidResponse(data []byte, httpVersion string) bool {
 	}
 
 	split := strings.Split(dataString, "\r\n")
-	if len(split) <= 0 {
-		log.Error("No components in response.")
+	if len(split) < 2 {
+		log.Error("not sufficient components in response.", dataString)
 		return false
 	}
 
-	for _, key := range split {
-		if key == "100 Continue" {
+	code := strings.Split(split[1], " ")
+	if len(code) < 2 {
+		log.Error("no valid status code in", dataString)
+	}
+
+	if val, err := strconv.Atoi(code[0]); err == nil {
+		if val < 300 {
 			return true
 		}
 	}
 
-	log.Error("No 100 Continue!")
+	// for _, key := range split {
+	// 	if key == "100 Continue" {
+	// 		return true
+	// 	}
+	// }
+	// log.Error("No 100 Continue!")
 	return false
 }
