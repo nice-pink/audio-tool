@@ -43,12 +43,12 @@ func validateResponse(conn net.Conn, httpVersion string, allowEmpty bool) bool {
 			log.Err(err, "Read data from socket.")
 			return true
 		}
+		log.Info("Read header response bytes", n)
 
 		if n > 0 {
 			return isValidResponse(data, httpVersion)
 		}
 
-		log.Info("Read header response bytes", n)
 		if allowEmpty {
 			return true
 		}
