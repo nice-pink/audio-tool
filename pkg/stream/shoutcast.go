@@ -8,5 +8,5 @@ func GetShoutcastSourceHeader(connTarget ConnTarget, httpVersion string) ([]byte
 		header += "Authorization: Basic " + connTarget.BasicAuth + "\n"
 	}
 	header += "Connection: close"
-	return convertToByteHeader(header, false), nil
+	return convertToByteHeader(header, true), nil
 }

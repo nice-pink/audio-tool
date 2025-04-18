@@ -21,7 +21,7 @@ func GetIcecastPutHeader(connTarget ConnTarget, meta IcyMeta, httpVersion string
 		header += "Authorization: Basic " + connTarget.BasicAuth + "\n"
 	}
 	header += addIcyMeta(meta)
-	return convertToByteHeader(header, false), nil
+	return convertToByteHeader(header, true), nil
 }
 
 func addIcyMeta(meta IcyMeta) string {
