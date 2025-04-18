@@ -53,8 +53,6 @@ func getBasicAuth(username, password string) string {
 }
 
 func convertToByteHeader(header string, print bool) []byte {
-	header = strings.Replace(header, "\n", "\r\n", -1)
-	header += "\r\n"
 	if print {
 		log.Info("Header:\n" + header)
 		log.Info("Header size:", len(header))
