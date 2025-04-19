@@ -96,8 +96,6 @@ func (c *Connection) streamBufferLoop(buffer []byte,
 	var bytesWrittenCycle int = 0
 
 	// run loop
-	var max int
-	var dist int
 	var count int = 1
 	for {
 		if byteIndex == 0 {
@@ -105,13 +103,8 @@ func (c *Connection) streamBufferLoop(buffer []byte,
 				loopInitialFn(status.loopCount)
 			}
 		} else if byteIndex >= status.bufferLen {
-			// log.Info("Start loop", loopCount)
 			byteIndex = 0
 			count = 1
-			// loopCount++
-			// if loops > 0 && loopCount >= loops {
-			// 	break
-			// }
 			status.loopCount++
 			if loopCompletionFn != nil {
 				loopCompletionFn(status.loopCount)
@@ -120,41 +113,45 @@ func (c *Connection) streamBufferLoop(buffer []byte,
 
 		var rate float64 = -1
 		if status.sendBitRate > 0 {
-			/*
-			* calculate our instant rate over the entire transmit
-			* duration
-			 */
+			// calculate our instant rate over the entire transmit duration
 			rate = ((float64)(status.bytesWrittenTotal * 8)) / ((float64)(time.Now().UnixNano()-status.streamStart) / 1000000000)
 		}
 
 		// compare rate
 		if rate < status.sendBitRate {
-			max = min(status.bufferLen, count*status.chunkSize)
-			dist = max - byteIndex
-			// send data
-			bytesWrittenCycle, err = c.socketConn.Write(buffer[byteIndex:max])
+			bytesWrittenCycle, err = c.SendBytes(buffer, byteIndex, count, status)
 			if err != nil {
-				log.Error(err, "could not send data in loop.")
 				return err
 			}
-			if bytesWrittenCycle <= 0 {
-				log.Error("bytes written in cycle", bytesWrittenCycle)
-				return errors.New("not all data sent")
-			}
-			if bytesWrittenCycle != dist {
-				log.Error("not all bytes sent. Should", dist, ", did", bytesWrittenCycle)
-				return errors.New("not all data sent")
-			}
-			status.bytesWrittenTotal += int64(bytesWrittenCycle)
 			byteIndex += bytesWrittenCycle
 
 			if c.VerboseLogs {
 				log.Info(bytesWrittenCycle, "bytes written")
 			}
-
 			count++
 		}
 	}
+}
+
+func (c Connection) SendBytes(buffer []byte, byteIndex, count int, status *StreamBufferStatus) (int, error) {
+	max := min(status.bufferLen, count*status.chunkSize)
+	dist := max - byteIndex
+	// send data
+	bytesWrittenCycle, err := c.socketConn.Write(buffer[byteIndex:max])
+	if err != nil {
+		log.Error(err, "could not send data in loop.")
+		return 0, err
+	}
+	if bytesWrittenCycle <= 0 {
+		log.Error("bytes written in cycle", bytesWrittenCycle)
+		return 0, errors.New("not all data sent")
+	}
+	if bytesWrittenCycle != dist {
+		log.Error("not all bytes sent. Should", dist, ", did", bytesWrittenCycle)
+		return 0, errors.New("not all data sent")
+	}
+	status.bytesWrittenTotal += int64(bytesWrittenCycle)
+	return bytesWrittenCycle, nil
 }
 
 func (c Connection) SendFile(filepath string, chunkSize int) error {
