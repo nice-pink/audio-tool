@@ -23,19 +23,20 @@ const (
 )
 
 type Connection struct {
-	url            string
-	port           int
-	proxyUrl       string
-	proxyPort      int
-	Meta           []byte
-	SrcInfo        string
-	DestInfo       string
-	VerboseLogs    bool
-	timeout        time.Duration
-	connectionType ConnectionType
-	httpClient     *http.Client
-	socketConn     net.Conn
-	metrics        *Metrics
+	url               string
+	port              int
+	proxyUrl          string
+	proxyPort         int
+	Meta              []byte
+	SrcInfo           string
+	DestInfo          string
+	VerboseLogs       bool
+	timeout           time.Duration
+	connectionType    ConnectionType
+	httpClient        *http.Client
+	socketConn        net.Conn
+	isSocketConnected bool
+	metrics           *Metrics
 }
 
 func NewConnection(url, proxyUrl string, port, proxyPort int, timeout time.Duration, connectionType ConnectionType, metrics util.MetricsControl) *Connection {
@@ -101,6 +102,12 @@ func (c *Connection) getHttpClient() (*http.Client, error) {
 }
 
 func (c *Connection) GetSocketConn() (net.Conn, error) {
+	if c.isSocketConnected {
+		// return socket
+		return c.socketConn, nil
+	}
+
+	// init new socket connection
 	addr := c.GetAddr()
 	var err error
 
@@ -132,6 +139,11 @@ func (c *Connection) GetSocketConn() (net.Conn, error) {
 	}
 	c.socketConn, err = dialer.Dial(TCP_PROTO, addr)
 	return c.socketConn, err
+}
+
+func (c *Connection) CloseSocket() {
+	c.isSocketConnected = false
+	c.socketConn.Close()
 }
 
 func (c *Connection) GetAddr() string {
