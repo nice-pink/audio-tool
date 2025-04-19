@@ -59,6 +59,7 @@ func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize 
 			log.Err(err, "stream buffer loop error")
 			// socket might be broken -> reinit
 			c.socketConn.Close()
+			c.socketConn = nil
 			for {
 				// forever retry to create connection
 				_, err = c.GetSocketConn()
@@ -123,7 +124,7 @@ func (c *Connection) streamBufferLoop(buffer []byte, status *StreamBufferStatus,
 			// send data
 			bytesWrittenCycle, err = c.socketConn.Write(buffer[byteIndex:max])
 			if err != nil {
-				log.Error(err, "could not send data.")
+				log.Error(err, "could not send data in loop.")
 				return err
 			}
 			if bytesWrittenCycle <= 0 {
@@ -198,7 +199,7 @@ func (c Connection) SendFile(filepath string, chunkSize int) error {
 		// send data
 		bytesWrittenCycle, err = conn.Write(buffer)
 		if err != nil {
-			log.Error(err, "could not send data.")
+			log.Error(err, "could not send data from file", filepath)
 			return err
 		}
 		bytesWrittenTotal += bytesWrittenCycle

@@ -13,7 +13,7 @@ func WriteHeader(conn net.Conn, headerBuffer []byte, retry int, httpVersion stri
 	for counter := 0; counter < retry; counter++ {
 		n, err := conn.Write(headerBuffer)
 		if err != nil {
-			log.Err(err, "Could not send data.")
+			log.Err(err, "Could not send header data.")
 			return false
 		}
 
