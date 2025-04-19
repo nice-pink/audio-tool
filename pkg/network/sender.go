@@ -51,8 +51,14 @@ func (c *Connection) StreamBuffer(buffer []byte,
 			err = c.streamBufferLoop(buffer, status, loopInitialFn, loopCompletionFn)
 			if err != nil {
 				log.Err(err, "stream buffer loop error")
-				c.socketConn.Close()
-
+				c.CloseSocket()
+				for {
+					// retry reconnect socket.
+					_, err := c.GetSocketConn()
+					if err == nil {
+						break
+					}
+				}
 			}
 		}
 	} else {

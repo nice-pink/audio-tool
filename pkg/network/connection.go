@@ -64,7 +64,7 @@ func NewConnection(url, proxyUrl string, port, proxyPort int, timeout time.Durat
 
 func (c *Connection) Close() {
 	if c.socketConn != nil {
-		c.socketConn.Close()
+		c.CloseSocket()
 	}
 }
 
