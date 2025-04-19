@@ -10,6 +10,9 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
+type LoopHandler func(loopCount int) error
+type SimpleHandler func() error
+
 type StreamBufferStatus struct {
 	sendBitRate       float64
 	bufferLen         int
@@ -19,7 +22,12 @@ type StreamBufferStatus struct {
 	loopCount         int
 }
 
-func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize int, endless bool, initialFn, loopInitialFn, loopCompletionFn func() error) error {
+func (c *Connection) StreamBuffer(buffer []byte,
+	sendBitRate float64,
+	chunkSize int,
+	endless bool,
+	initialFn SimpleHandler,
+	loopInitialFn, loopCompletionFn LoopHandler) error {
 	// status
 	status := &StreamBufferStatus{
 		bufferLen:         len(buffer),
@@ -79,7 +87,9 @@ func (c *Connection) StreamBuffer(buffer []byte, sendBitRate float64, chunkSize 
 	return err
 }
 
-func (c *Connection) streamBufferLoop(buffer []byte, status *StreamBufferStatus, loopInitialFn, loopCompletionFn func() error) error {
+func (c *Connection) streamBufferLoop(buffer []byte,
+	status *StreamBufferStatus,
+	loopInitialFn, loopCompletionFn LoopHandler) error {
 	// variables
 	var err error
 	var byteIndex int = 0
@@ -92,7 +102,7 @@ func (c *Connection) streamBufferLoop(buffer []byte, status *StreamBufferStatus,
 	for {
 		if byteIndex == 0 {
 			if loopInitialFn != nil {
-				loopInitialFn()
+				loopInitialFn(status.loopCount)
 			}
 		} else if byteIndex >= status.bufferLen {
 			// log.Info("Start loop", loopCount)
@@ -104,7 +114,7 @@ func (c *Connection) streamBufferLoop(buffer []byte, status *StreamBufferStatus,
 			// }
 			status.loopCount++
 			if loopCompletionFn != nil {
-				loopCompletionFn()
+				loopCompletionFn(status.loopCount)
 			}
 		}
 
