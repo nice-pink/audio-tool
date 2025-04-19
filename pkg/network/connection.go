@@ -117,12 +117,18 @@ func (c *Connection) GetSocketConn() (net.Conn, error) {
 		c.socketConn, err = tls.Dial(TCP_PROTO, addr, &tls.Config{
 			InsecureSkipVerify: true,
 		})
+		if err != nil {
+			c.isSocketConnected = true
+		}
 		return c.socketConn, err
 	}
 
 	if c.proxyUrl == "" || c.proxyPort == 0 {
 		// no proxy
 		c.socketConn, err = net.Dial(TCP_PROTO, addr)
+		if err != nil {
+			c.isSocketConnected = true
+		}
 		return c.socketConn, err
 	}
 
@@ -138,6 +144,9 @@ func (c *Connection) GetSocketConn() (net.Conn, error) {
 		log.Info("Use proxy", proxyAddr, "to connect socket to", addr)
 	}
 	c.socketConn, err = dialer.Dial(TCP_PROTO, addr)
+	if err != nil {
+		c.isSocketConnected = true
+	}
 	return c.socketConn, err
 }
 
