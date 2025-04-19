@@ -50,7 +50,7 @@ func (c *Connection) StreamBuffer(buffer []byte,
 
 			err = c.streamBufferLoop(buffer, status, loopInitialFn, loopCompletionFn)
 			if err != nil {
-				log.Err(err, "stream buffer loop error")
+				log.Err(err, "stream buffer loop error endless")
 				c.CloseSocket()
 				for {
 					// retry reconnect socket.
@@ -58,6 +58,7 @@ func (c *Connection) StreamBuffer(buffer []byte,
 					if err == nil {
 						break
 					}
+					time.Sleep(1 * time.Second)
 				}
 			}
 		}
@@ -71,18 +72,6 @@ func (c *Connection) StreamBuffer(buffer []byte,
 		err = c.streamBufferLoop(buffer, status, loopInitialFn, loopCompletionFn)
 		if err != nil {
 			log.Err(err, "stream buffer loop error")
-			// socket might be broken -> reinit
-			c.socketConn.Close()
-			c.socketConn = nil
-			for {
-				// forever retry to create connection
-				_, err = c.GetSocketConn()
-				if err == nil {
-					break
-				}
-				time.Sleep(1 * time.Second)
-			}
-
 		}
 	}
 
