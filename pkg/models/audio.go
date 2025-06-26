@@ -35,7 +35,6 @@ type TimeFormat int
 
 const (
 	TimeFormat_Seconds TimeFormat = iota
-	TimeFormat_Samples
 )
 
 type ProcInfo struct {
@@ -43,14 +42,23 @@ type ProcInfo struct {
 	Duration   float64
 	From       float64
 	To         float64
-	TimeFormat TimeFormat
+	TimeFormat TimeFormat // always uses seconds
+	Trim       bool
 }
 
 type ProcJob struct {
 	Type         string
+	Input        string
 	ProcInfo     ProcInfo
 	AudioFormats []AudioFormat
-	Input        string
+	Outputs      []string
+}
+
+type MixJob struct {
+	Type         string
+	Inputs       []string
+	ProcInfos    []ProcInfo
+	AudioFormats []AudioFormat
 	Outputs      []string
 }
 

@@ -1,8 +1,6 @@
 package ffprocess
 
 import (
-	"strconv"
-
 	"github.com/nice-pink/audio-tool/pkg/models"
 	"github.com/nice-pink/goutil/pkg/log"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
@@ -17,10 +15,20 @@ func FadeOut(procJob models.ProcJob, codecConfig CodecConfig) error {
 }
 
 func fade(in bool, procJob models.ProcJob, codecConfig CodecConfig) error {
+	// input args
+	intputKwArgs := ffmpeg.KwArgs{}
+	if procJob.ProcInfo.Trim {
+		if in {
+			intputKwArgs["ss"] = GetFloatString(procJob.ProcInfo.Offset)
+		} else {
+			intputKwArgs["to"] = GetFloatString(procJob.ProcInfo.Offset + procJob.ProcInfo.Duration)
+		}
+	}
+
 	// filter args
 	filterKwArgs := getFadeFilterArgs(procJob.ProcInfo, in)
 
-	inputNode := ffmpeg.Input(procJob.Input).
+	inputNode := ffmpeg.Input(procJob.Input, intputKwArgs).
 		Filter("afade", ffmpeg.Args{}, filterKwArgs).ASplit()
 
 	// get multiple outputs
@@ -38,16 +46,24 @@ func getFadeFilterArgs(procInfo models.ProcInfo, fadeIn bool) ffmpeg.KwArgs {
 	filterKwArgs := ffmpeg.KwArgs{}
 
 	switch procInfo.TimeFormat {
-	case models.TimeFormat_Samples:
-		filterKwArgs["start_sample"] = strconv.FormatFloat(procInfo.Offset, 'f', 4, 64)
-		filterKwArgs["nb_samples"] = strconv.FormatFloat(procInfo.Duration, 'f', 4, 64)
+	// case models.TimeFormat_Samples:
+	// 	filterKwArgs["start_sample"] = GetFloatString(procInfo.Offset)
+	// 	filterKwArgs["nb_samples"] = GetFloatString(procInfo.Duration)
 	case models.TimeFormat_Seconds:
-		filterKwArgs["start_time"] = strconv.FormatFloat(procInfo.Offset, 'f', 4, 64) + "s"
-		filterKwArgs["duration"] = strconv.FormatFloat(procInfo.Duration, 'f', 4, 64) + "s"
+		if fadeIn && !procInfo.Trim {
+			// if trim=true -> the input will be started later in global command
+			filterKwArgs["start_time"] = GetFloatString(procInfo.Offset) + "s"
+		}
+		filterKwArgs["duration"] = GetFloatString(procInfo.Duration) + "s"
 	}
 
-	filterKwArgs["silence"] = strconv.FormatFloat(procInfo.From, 'f', 4, 64)
-	filterKwArgs["unity"] = strconv.FormatFloat(procInfo.To, 'f', 4, 64)
+	if fadeIn {
+		filterKwArgs["silence"] = GetFloatString(procInfo.From)
+		filterKwArgs["unity"] = GetFloatString(procInfo.To)
+	} else {
+		filterKwArgs["silence"] = GetFloatString(procInfo.To)
+		filterKwArgs["unity"] = GetFloatString(procInfo.From)
+	}
 
 	if !fadeIn {
 		filterKwArgs["type"] = "out"
