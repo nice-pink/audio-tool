@@ -10,6 +10,8 @@ import (
 )
 
 type Parser struct {
+	// general
+	verbose bool
 	// data
 	fullDataSize uint64
 	currentData  []byte
@@ -32,6 +34,10 @@ type Parser struct {
 
 func NewParser() *Parser {
 	return &Parser{audioType: AudioTypeUnknown}
+}
+
+func NewVerboseParser() *Parser {
+	return &Parser{audioType: AudioTypeUnknown, verbose: true}
 }
 
 // get type
@@ -96,7 +102,7 @@ func GetAudioTypeFromCodecName(name string) AudioType {
 
 // parse
 
-func (p *Parser) Parse(data []byte, filepath string, includeUnitEncoding bool, verbose bool, printLogs bool) *AudioInfos {
+func (p *Parser) Parse(data []byte, filepath string, includeUnitEncoding bool, verbose bool) *AudioInfos {
 	// skip tag
 	tagType := tags.GetTagType(data)
 	tagSize := tags.GetTagSize(tagType, data)
@@ -154,7 +160,7 @@ func (p *Parser) Parse(data []byte, filepath string, includeUnitEncoding bool, v
 	fmt.Println()
 	p.audioInfo.FirstFrameIndex = firstFrameIndex
 	p.audioInfo.TagSize = tagSize
-	if printLogs {
+	if p.verbose {
 		p.PrintAudioInfo()
 	}
 
@@ -163,14 +169,14 @@ func (p *Parser) Parse(data []byte, filepath string, includeUnitEncoding bool, v
 
 	// log
 	p.fullDataSize = uint64(len(data))
-	if printLogs {
+	if p.verbose {
 		p.LogParserResult(filepath)
 	}
 
 	return &p.audioInfo
 }
 
-func (p *Parser) ParseBlockwise(data []byte, audioTypeGuessed AudioType, includeUnitEncoding bool, verbose bool, printLogs bool) (*AudioInfos, error) {
+func (p *Parser) ParseBlockwise(data []byte, audioTypeGuessed AudioType, includeUnitEncoding bool, verbose bool) (*AudioInfos, error) {
 	p.fullDataSize += uint64(len(data))
 	p.currentData = append(p.currentData, data...)
 	dataSize := len(p.currentData)
@@ -275,7 +281,7 @@ func (p *Parser) ParseBlockwise(data []byte, audioTypeGuessed AudioType, include
 	}
 
 	// log infos
-	if printLogs {
+	if p.verbose {
 		fmt.Println()
 		p.PrintAudioInfo()
 		p.LogParserResult("")

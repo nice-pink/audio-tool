@@ -41,8 +41,8 @@ func main() {
 		Blockwise(data, guessedAudioType, *repeatBlock, *verbose)
 	} else {
 		// parse audio
-		parser := encodings.NewParser()
-		parser.Parse(data, *input, false, *verbose, true)
+		parser := encodings.NewVerboseParser()
+		parser.Parse(data, *input, false, *verbose)
 	}
 }
 
@@ -61,7 +61,7 @@ func Blockwise(data []byte, guessedAudioType encodings.AudioType, repeatBuffer i
 			index = 0
 		}
 		iMax := min(index+1024, dataSize)
-		parser.ParseBlockwise(data[index:iMax], guessedAudioType, false, verbose, false)
+		parser.ParseBlockwise(data[index:iMax], guessedAudioType, false, verbose)
 
 		index = iMax
 	}

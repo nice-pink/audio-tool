@@ -36,8 +36,8 @@ func main() {
 	}
 
 	// parse audio
-	parser := encodings.NewParser()
-	info := parser.Parse(data, *filepath, false, *verbose, true)
+	parser := encodings.NewVerboseParser()
+	info := parser.Parse(data, *filepath, false, *verbose)
 	if info.TagSize > 0 && *output != "" {
 		util.WriteDataToFile(data[info.TagSize:], *output)
 	}

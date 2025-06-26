@@ -42,7 +42,7 @@ func (v *PrivateBitValidator) ValidateData(data []byte) error {
 	}
 
 	// validate
-	blockAudioInfo, err := v.parser.ParseBlockwise(data, v.audioType, true, v.verbose, false)
+	blockAudioInfo, err := v.parser.ParseBlockwise(data, v.audioType, true, v.verbose)
 	if err != nil {
 		log.Err(err, "Parsing error.")
 		if v.metrics != nil {
@@ -107,7 +107,8 @@ func NewEncodingValidator(active, failEarly bool, expectations Expectations, met
 	e := &EncodingValidator{
 		expectations: expectations,
 		verbose:      verbose,
-		active:       active, parser: NewParser(),
+		active:       active,
+		parser:       NewParser(),
 	}
 
 	if metrics.Enabled {
@@ -124,7 +125,7 @@ func (v *EncodingValidator) ValidateData(data []byte) error {
 	}
 
 	// validate
-	blockAudioInfo, err := v.parser.ParseBlockwise(data, GetAudioTypeFromCodecName(v.expectations.Encoding.CodecName), true, v.verbose, false)
+	blockAudioInfo, err := v.parser.ParseBlockwise(data, GetAudioTypeFromCodecName(v.expectations.Encoding.CodecName), true, v.verbose)
 	if err != nil {
 		log.Err(err, "Parsing error.")
 		return err

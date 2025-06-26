@@ -35,7 +35,7 @@ func NewAudioFile(filepath string, loadData, parse bool) *AudioFile {
 
 	if parse {
 		parser := encodings.NewParser()
-		audio.Infos = parser.Parse(audio.Data, filepath, false, false, false)
+		audio.Infos = parser.Parse(audio.Data, filepath, false, false)
 	}
 
 	return audio
