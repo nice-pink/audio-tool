@@ -47,11 +47,11 @@ type ProcInfo struct {
 }
 
 type ProcJob struct {
-	Type        string
-	ProcInfo    ProcInfo
-	AudioFormat AudioFormat
-	Input       string
-	Output      string
+	Type         string
+	ProcInfo     ProcInfo
+	AudioFormats []AudioFormat
+	Input        string
+	Outputs      []string
 }
 
 // ffmpeg info audio info (ffprobe)

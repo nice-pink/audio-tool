@@ -18,6 +18,10 @@ func RunJob(job string, codecConfig CodecConfig) error {
 	switch procJob.Type {
 	case "fadeIn":
 		return FadeIn(procJob, codecConfig)
+	case "fadeOut":
+		return FadeOut(procJob, codecConfig)
+	case "transcode":
+		return Transcode(procJob, codecConfig)
 	default:
 		log.Error("unknown job:", procJob.Type)
 	}

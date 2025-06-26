@@ -8,13 +8,15 @@ import (
 
 // transcode
 
-func TranscodeAudio(filepathIn string, filepathOut string, format models.AudioFormat, codecConfig CodecConfig) error {
-	// get propper codec name
-	args := GetKwArgs(format, codecConfig)
+func Transcode(procJob models.ProcJob, codecConfig CodecConfig) error {
 	// transcode
-	err := ffmpeg.Input(filepathIn).
-		Output(filepathOut, args).
-		OverWriteOutput().ErrorToStdOut().Run()
+	inputNode := ffmpeg.Input(procJob.Input).ASplit()
+
+	// get multiple outputs
+	outs := GetOutputs(inputNode, procJob.Outputs, procJob.AudioFormats, codecConfig)
+
+	// run
+	err := ffmpeg.MergeOutputs(outs...).OverWriteOutput().ErrorToStdOut().Run()
 	if err != nil {
 		log.Err(err)
 	}
