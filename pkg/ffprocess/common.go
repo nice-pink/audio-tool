@@ -43,7 +43,7 @@ func GetCodec(formatCodec string, codecConfig CodecConfig) string {
 
 // outputs
 
-func GetAudioFormatArgs(format models.AudioFormat, codecConfig CodecConfig) ffmpeg.KwArgs {
+func GetAudioOutputArgs(format models.AudioFormat, output models.Output, codecConfig CodecConfig) ffmpeg.KwArgs {
 	args := ffmpeg.KwArgs{
 		"c:a": GetCodec(format.Codec, codecConfig),
 	}
@@ -57,10 +57,15 @@ func GetAudioFormatArgs(format models.AudioFormat, codecConfig CodecConfig) ffmp
 		args["ar"] = format.SampleRate
 	}
 
+	if output.SegmentDuration > 0 {
+		args["f"] = "segment"
+		args["segment_time"] = output.SegmentDuration
+	}
+
 	return args
 }
 
-func GetOutputs(input *ffmpeg.Node, outputs []string, formats []models.AudioFormat, codecConfig CodecConfig) []*ffmpeg.Stream {
+func GetOutputs(input *ffmpeg.Node, outputs []models.Output, formats []models.AudioFormat, codecConfig CodecConfig) []*ffmpeg.Stream {
 	if len(outputs) != len(formats) {
 		log.Error("amount of outputs must match amount of audio formats")
 		return nil
@@ -68,8 +73,8 @@ func GetOutputs(input *ffmpeg.Node, outputs []string, formats []models.AudioForm
 
 	outs := []*ffmpeg.Stream{}
 	for index := range len(outputs) {
-		args := GetAudioFormatArgs(formats[index], codecConfig)
-		out := input.Get(strconv.Itoa(index)).Output(outputs[index], args)
+		args := GetAudioOutputArgs(formats[index], outputs[index], codecConfig)
+		out := input.Get(strconv.Itoa(index)).Output(outputs[index].Filename, args)
 		outs = append(outs, out)
 	}
 

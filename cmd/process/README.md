@@ -9,7 +9,11 @@ Use ffmpeg for
 
 ## Transcode
 
-bin/process -job '{"input":"bin/elefanten.mp3","outputs":["bin/output_128.mp3","bin/output_196.mp3"],"type":"transcode",audioFormats":[{"codec":"mp3","bitrate":128000,"sampleRate":44100,"channels":2},{"codec":"mp3","bitrate":196000,"sampleRate":44100,"channels":2}]}' -codecConfig cmd/process/codec-config.yaml
+bin/process -job '{"input":"bin/elefanten.mp3","outputs":[{"filename":"bin/output_128.mp3"},{"filename":"bin/output_196.mp3"}],"type":"transcode","audioFormats":[{"codec":"mp3","bitrate":128000,"sampleRate":44100,"channels":2},{"codec":"mp3","bitrate":196000,"sampleRate":44100,"channels":2}]}' -codecConfig cmd/process/codec-config.yaml
+
+## Transcode - Segment
+
+bin/process -job '{"input":"bin/elefanten.mp3","outputs":[{"filename":"bin/output_128_%03d.mp3","segmentDuration":5.0},{"filename":"bin/output_196_%03d.mp3","segmentDuration":5.0}],"type":"transcode","audioFormats":[{"codec":"mp3","bitrate":128000,"sampleRate":44100,"channels":2},{"codec":"mp3","bitrate":196000,"sampleRate":44100,"channels":2}]}' -codecConfig cmd/process/codec-config.yaml
 
 ## Fade job
 

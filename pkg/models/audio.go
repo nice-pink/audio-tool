@@ -51,8 +51,13 @@ type ProcJob struct {
 	Input        string
 	ProcInfo     ProcInfo
 	AudioFormats []AudioFormat
-	Outputs      []string
+	Outputs      []Output
 	TagProc      TagProc
+}
+
+type Output struct {
+	Filename        string
+	SegmentDuration float64
 }
 
 type TagProc struct {
