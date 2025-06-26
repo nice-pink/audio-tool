@@ -10,6 +10,8 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
+// add metadata tags to file
+
 func main() {
 	input := flag.String("input", "", "Input filepath.")
 	output := flag.String("output", "", "Output filepath.")

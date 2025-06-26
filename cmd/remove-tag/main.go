@@ -10,6 +10,8 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
+// remove tags from audio files
+
 func main() {
 	filepath := flag.String("input", "", "Input filepath")
 	output := flag.String("output", "", "Output filepath")

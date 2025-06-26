@@ -9,6 +9,9 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
+// Modify audio file:
+// - set private bit in first frame (could be used for stream testing)
+
 func main() {
 	input := flag.String("input", "", "Input filepath.")
 	output := flag.String("output", "", "Output filepath.")

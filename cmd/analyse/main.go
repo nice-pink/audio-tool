@@ -8,6 +8,9 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
+// analyse audio files
+// - metadata / tags
+
 func main() {
 	filepath := flag.String("input", "", "Path to file.")
 	flag.Parse()

@@ -9,6 +9,8 @@ import (
 	"github.com/nice-pink/goutil/pkg/log"
 )
 
+// Parse file either as whole or in blocks/chunks.
+
 func main() {
 	input := flag.String("input", "", "Filepath")
 	block := flag.Bool("block", false, "Parse file in blocks.")
