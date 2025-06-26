@@ -76,18 +76,6 @@ func GetOutputs(input *ffmpeg.Node, outputs []string, formats []models.AudioForm
 	return outs
 }
 
-func GenerateStreamOutputPipeline(stream *ffmpeg.Stream, outputs []string, formats []models.AudioFormat, index int, codecConfig CodecConfig) *ffmpeg.Stream {
-	if len(outputs) != len(formats) {
-		log.Error("amount of outputs must match amount of audio formats")
-		return nil
-	}
-	if index >= len(outputs) {
-		return stream
-	}
-	stream = stream.Output(outputs[index], GetAudioFormatArgs(formats[index], codecConfig))
-	return GenerateStreamOutputPipeline(stream, outputs, formats, index+1, codecConfig)
-}
-
 func GetOutputFilepath(filepathIn string, codec string, outputFolder string) string {
 	filename := filepath.Base(filepathIn)
 	ext := filepath.Ext(filename)
@@ -96,4 +84,59 @@ func GetOutputFilepath(filepathIn string, codec string, outputFolder string) str
 		filepath = path.Join(outputFolder, filepath)
 	}
 	return filepath
+}
+
+// global
+
+func GetGlobalArgs(procJob models.ProcJob) []string {
+	args := []string{}
+
+	//* Tags *//
+	// id3
+	if procJob.TagProc.DiscardId3 {
+		args = append(args, "-id3v2_version", "0")
+	}
+	// xing
+	if procJob.TagProc.DiscardXing {
+		args = append(args, "-write_xing", "0")
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	return args
+}
+
+// run
+
+func RunFFmpegInputNode(input *ffmpeg.Node, procJob models.ProcJob, codecConfig CodecConfig) error {
+	// get multiple outputs
+	outs := GetOutputs(input, procJob.Outputs, procJob.AudioFormats, codecConfig)
+
+	out := ffmpeg.MergeOutputs(outs...)
+	if args := GetGlobalArgs(procJob); args != nil {
+		out = out.GlobalArgs(args...)
+	}
+
+	// run
+	err := out.OverWriteOutput().ErrorToStdOut().Run()
+	if err != nil {
+		log.Err(err)
+	}
+	return err
+}
+
+func RunFFmpegMultipleOut(procJob models.ProcJob, outs ...*ffmpeg.Stream) error {
+	out := ffmpeg.MergeOutputs(outs...)
+	if args := GetGlobalArgs(procJob); args != nil {
+		out = out.GlobalArgs(args...)
+	}
+
+	// run
+	err := out.OverWriteOutput().ErrorToStdOut().Run()
+	if err != nil {
+		log.Err(err)
+	}
+	return err
 }

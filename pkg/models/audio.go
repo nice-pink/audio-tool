@@ -52,6 +52,12 @@ type ProcJob struct {
 	ProcInfo     ProcInfo
 	AudioFormats []AudioFormat
 	Outputs      []string
+	TagProc      TagProc
+}
+
+type TagProc struct {
+	DiscardId3  bool
+	DiscardXing bool
 }
 
 type MixJob struct {

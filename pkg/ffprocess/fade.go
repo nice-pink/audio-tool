@@ -2,7 +2,6 @@ package ffprocess
 
 import (
 	"github.com/nice-pink/audio-tool/pkg/models"
-	"github.com/nice-pink/goutil/pkg/log"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
@@ -31,15 +30,8 @@ func fade(in bool, procJob models.ProcJob, codecConfig CodecConfig) error {
 	inputNode := ffmpeg.Input(procJob.Input, intputKwArgs).
 		Filter("afade", ffmpeg.Args{}, filterKwArgs).ASplit()
 
-	// get multiple outputs
-	outs := GetOutputs(inputNode, procJob.Outputs, procJob.AudioFormats, codecConfig)
-
 	// run
-	err := ffmpeg.MergeOutputs(outs...).OverWriteOutput().ErrorToStdOut().Run()
-	if err != nil {
-		log.Err(err)
-	}
-	return err
+	return RunFFmpegInputNode(inputNode, procJob, codecConfig)
 }
 
 func getFadeFilterArgs(procInfo models.ProcInfo, fadeIn bool) ffmpeg.KwArgs {

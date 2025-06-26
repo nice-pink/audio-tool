@@ -2,12 +2,10 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"github.com/nice-pink/audio-tool/pkg/ffprocess"
 )
-
-// fade out:
-// ffmpeg -i <input.mp3> -af atrim=end_sample=<end_sample>,afade=type=out:start_sample=<start_sample>:nb_samples=<dur_samples> -b:a <br> -write_xing 0 -id3v2_version 0 <output.mp3>
 
 func main() {
 	// port := flag.Int("port", 8080, "Http port")
@@ -23,6 +21,8 @@ func main() {
 		codecConfig.UseDefault = true
 	}
 
-	ffprocess.RunJob(*job, codecConfig)
-
+	err := ffprocess.RunJob(*job, codecConfig)
+	if err != nil {
+		os.Exit(2)
+	}
 }
