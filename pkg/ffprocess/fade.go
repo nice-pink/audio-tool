@@ -5,19 +5,15 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
-func FadeIn(procJob models.ProcJob, codecConfig CodecConfig) error {
-	return fade(true, procJob, codecConfig)
+func Fade(procJob models.ProcJob, codecConfig CodecConfig) error {
+	return fade(procJob, codecConfig)
 }
 
-func FadeOut(procJob models.ProcJob, codecConfig CodecConfig) error {
-	return fade(false, procJob, codecConfig)
-}
-
-func fade(in bool, procJob models.ProcJob, codecConfig CodecConfig) error {
+func fade(procJob models.ProcJob, codecConfig CodecConfig) error {
 	// input args
 	intputKwArgs := ffmpeg.KwArgs{}
 	if procJob.ProcInfo.Trim {
-		if in {
+		if isFadeIn(procJob.ProcInfo) {
 			intputKwArgs["ss"] = GetFloatString(procJob.ProcInfo.Offset)
 		} else {
 			intputKwArgs["to"] = GetFloatString(procJob.ProcInfo.Offset + procJob.ProcInfo.Duration)
@@ -25,7 +21,7 @@ func fade(in bool, procJob models.ProcJob, codecConfig CodecConfig) error {
 	}
 
 	// filter args
-	filterKwArgs := getFadeFilterArgs(procJob.ProcInfo, in)
+	filterKwArgs := getFadeFilterArgs(procJob.ProcInfo)
 
 	inputNode := ffmpeg.Input(procJob.Input, intputKwArgs).
 		Filter("afade", ffmpeg.Args{}, filterKwArgs).ASplit()
@@ -34,8 +30,10 @@ func fade(in bool, procJob models.ProcJob, codecConfig CodecConfig) error {
 	return RunFFmpegInputNode(inputNode, procJob, codecConfig)
 }
 
-func getFadeFilterArgs(procInfo models.ProcInfo, fadeIn bool) ffmpeg.KwArgs {
+func getFadeFilterArgs(procInfo models.ProcInfo) ffmpeg.KwArgs {
 	filterKwArgs := ffmpeg.KwArgs{}
+
+	fadeIn := isFadeIn(procInfo)
 
 	switch procInfo.TimeFormat {
 	// case models.TimeFormat_Samples:
@@ -62,4 +60,8 @@ func getFadeFilterArgs(procInfo models.ProcInfo, fadeIn bool) ffmpeg.KwArgs {
 	}
 
 	return filterKwArgs
+}
+
+func isFadeIn(procInfo models.ProcInfo) bool {
+	return procInfo.From < procInfo.To
 }

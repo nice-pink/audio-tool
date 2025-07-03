@@ -53,6 +53,12 @@ type ProcJob struct {
 	AudioFormats []AudioFormat
 	Outputs      []Output
 	TagProc      TagProc
+	GlobalParams []string
+}
+
+type Input struct {
+	Filename string
+	Offset   float64
 }
 
 type Output struct {
@@ -66,11 +72,10 @@ type TagProc struct {
 }
 
 type MixJob struct {
-	Type         string
-	Inputs       []string
-	ProcInfos    []ProcInfo
-	AudioFormats []AudioFormat
-	Outputs      []string
+	Type      string
+	Inputs    []Input
+	ProcInfos []ProcInfo
+	ProcJob   ProcJob
 }
 
 // ffmpeg info audio info (ffprobe)

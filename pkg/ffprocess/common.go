@@ -9,7 +9,10 @@ import (
 	"github.com/nice-pink/audio-tool/pkg/models"
 	"github.com/nice-pink/goutil/pkg/log"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
+	"github.com/u2takey/go-utils/sets"
 )
+
+// consume ffmpeg from pipe: cat file.mp3 | ffmpeg -f mp3 -i pipe: -c:a pcm_s16le -f s16le pipe:
 
 // codecs
 
@@ -91,10 +94,34 @@ func GetOutputFilepath(filepathIn string, codec string, outputFolder string) str
 	return filepath
 }
 
+// input
+
+func NewInputsNode(name string, streams []*ffmpeg.Stream, kwargs ffmpeg.KwArgs) *ffmpeg.Node {
+	// generate input set
+	inputSet := sets.String{}
+	inputSet["FilterableStream"] = sets.Empty{}
+	inputSet["FilterableStream"] = sets.Empty{}
+
+	return ffmpeg.NewNode(streams,
+		name,
+		inputSet,
+		"FilterableStream",
+		0,
+		0,
+		nil,
+		kwargs,
+		"InputNode")
+}
+
 // global
 
 func GetGlobalArgs(procJob models.ProcJob) []string {
-	args := []string{}
+	var args []string
+	if len(procJob.GlobalParams) > 0 {
+		args = procJob.GlobalParams
+	} else {
+		args = []string{}
+	}
 
 	//* Tags *//
 	// id3
@@ -109,7 +136,6 @@ func GetGlobalArgs(procJob models.ProcJob) []string {
 	if len(args) == 0 {
 		return nil
 	}
-
 	return args
 }
 
