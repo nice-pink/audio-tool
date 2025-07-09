@@ -36,19 +36,15 @@ func mix(job models.MixJob, codecConfig CodecConfig) error {
 
 	streams := []*ffmpeg.Stream{}
 	for i, in := range job.Inputs {
-		procInfos := job.ProcInfos[i]
-
 		// input
 		s := ffmpeg.Input(in.Filename, nil)
 
-		if procInfos.Duration > 0 && procInfos.From != procInfos.To {
-			s = s.Filter("afade", nil, getFadeFilterArgs(procInfos))
+		if len(job.ProcInfos) >= i {
+			streams = append(streams, s)
 		}
 
-		if in.Offset > 0 {
-			// only apply delay filter if necessary
-			s = s.Filter("adelay", nil, getDelayFilterArgs(in.Offset))
-		}
+		procInfo := job.ProcInfos[i]
+		s = filterMixInput(s, in, procInfo)
 		streams = append(streams, s)
 	}
 
@@ -56,6 +52,18 @@ func mix(job models.MixJob, codecConfig CodecConfig) error {
 
 	// run
 	return RunFFmpegInputNode(filterNodes, job.ProcJob, codecConfig)
+}
+
+func filterMixInput(s *ffmpeg.Stream, in models.Input, procInfo models.ProcInfo) *ffmpeg.Stream {
+	if procInfo.Duration > 0 && procInfo.From != procInfo.To {
+		s = s.Filter("afade", nil, getFadeFilterArgs(procInfo))
+	}
+
+	if in.Offset > 0 {
+		// only apply delay filter if necessary
+		s = s.Filter("adelay", nil, getDelayFilterArgs(in.Offset))
+	}
+	return s
 }
 
 func getDelayFilterArgs(val float64) ffmpeg.KwArgs {

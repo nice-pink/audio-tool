@@ -9,8 +9,12 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
-func Probe(filepathIn string) (string, error) {
-	info, err := ffmpeg.Probe(filepathIn)
+func Probe(filepathIn string, frames bool) (string, error) {
+	probeArgs := []ffmpeg.KwArgs{}
+	if frames {
+		probeArgs = append(probeArgs, ffmpeg.KwArgs{"show_frames": ""})
+	}
+	info, err := ffmpeg.Probe(filepathIn, probeArgs...)
 	if err != nil {
 		log.Err(err, "Could not probe audio")
 		return "", err

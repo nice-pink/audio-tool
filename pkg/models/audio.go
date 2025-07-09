@@ -81,6 +81,7 @@ type MixJob struct {
 // ffmpeg info audio info (ffprobe)
 
 type AudioInfo struct {
+	Frames  []Frame      `json:"frames,omitempty"`
 	Streams []Stream     `json:"streams,omitempty"`
 	Format  StreamFormat `json:"format,omitempty"`
 	Meta    *string      `json:"meta,omitempty"`
@@ -113,6 +114,26 @@ type Stream struct {
 	ChannelLayout string `json:"channel_layout"`
 	Duration      string `json:"duration"`
 	BitRate       string `json:"bit_rate"`
+}
+
+type Frame struct {
+	MediaType               string `json:"media_type"`
+	StreamIndex             int    `json:"stream_index"`
+	KeyFrame                int    `json:"key_frame"`
+	PTS                     int64  `json:"pts"`
+	PTSTime                 string `json:"pts_time"`
+	PKTDTS                  int64  `json:"pkt_dts"`
+	PKTDTSTime              string `json:"pkt_dts_time"`
+	BestEffortTimestamp     int64  `json:"best_effort_timestamp"`
+	BestEffortTimestampTime string `json:"best_effort_timestamp_time"`
+	Duration                int64  `json:"duration"`
+	DurationTime            string `json:"duration_time"`
+	PKTPos                  string `json:"pkt_pos"`
+	PKTSize                 string `json:"pkt_size"`
+	SampleFmt               string `json:"sample_fmt"`
+	NbSamples               int    `json:"nb_samples"`
+	Channels                int    `json:"channels"`
+	ChannelLayout           string `json:"channel_layout"`
 }
 
 // process job
