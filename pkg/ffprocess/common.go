@@ -68,19 +68,15 @@ func GetAudioOutputArgs(format models.AudioFormat, output models.Output, codecCo
 	return args
 }
 
-func GetOutputs(input *ffmpeg.Node, outputs []models.Output, formats []models.AudioFormat, codecConfig CodecConfig) []*ffmpeg.Stream {
-	if len(outputs) != len(formats) {
-		log.Error("amount of outputs must match amount of audio formats")
-		return nil
-	}
+func GetOutputs(input *ffmpeg.Node, outputs []models.Output, codecConfig CodecConfig) []*ffmpeg.Stream {
+	log.Info("outputs:", outputs)
 
 	outs := []*ffmpeg.Stream{}
-	for index := range len(outputs) {
-		args := GetAudioOutputArgs(formats[index], outputs[index], codecConfig)
-		out := input.Get(strconv.Itoa(index)).Output(outputs[index].Filename, args)
+	for index, output := range outputs {
+		args := GetAudioOutputArgs(output.Format, output, codecConfig)
+		out := input.Get(strconv.Itoa(index)).Output(output.Filename, args)
 		outs = append(outs, out)
 	}
-
 	return outs
 }
 
@@ -97,14 +93,9 @@ func GetOutputFilepath(filepathIn string, codec string, outputFolder string) str
 // input
 
 func NewInputsNode(name string, streams []*ffmpeg.Stream, kwargs ffmpeg.KwArgs) *ffmpeg.Node {
-	// generate input set
-	inputSet := sets.String{}
-	inputSet["FilterableStream"] = sets.Empty{}
-	inputSet["FilterableStream"] = sets.Empty{}
-
 	return ffmpeg.NewNode(streams,
 		name,
-		inputSet,
+		sets.NewString("FilterableStream"),
 		"FilterableStream",
 		0,
 		0,
@@ -143,19 +134,12 @@ func GetGlobalArgs(procJob models.ProcJob) []string {
 
 func RunFFmpegInputNode(input *ffmpeg.Node, procJob models.ProcJob, codecConfig CodecConfig) error {
 	// get multiple outputs
-	outs := GetOutputs(input, procJob.Outputs, procJob.AudioFormats, codecConfig)
+	outs := GetOutputs(input, procJob.Outputs, codecConfig)
+	return RunFFmpegMultipleOut(procJob, outs...)
+}
 
-	out := ffmpeg.MergeOutputs(outs...)
-	if args := GetGlobalArgs(procJob); args != nil {
-		out = out.GlobalArgs(args...)
-	}
-
-	// run
-	err := out.OverWriteOutput().ErrorToStdOut().Run()
-	if err != nil {
-		log.Err(err)
-	}
-	return err
+func RunFFmpegInputNodeSimple(input *ffmpeg.Node, procJob models.ProcJob, codecConfig CodecConfig) error {
+	return input.Stream("", "").Output(procJob.Outputs[0].Filename).OverWriteOutput().ErrorToStdOut().Run()
 }
 
 func RunFFmpegMultipleOut(procJob models.ProcJob, outs ...*ffmpeg.Stream) error {

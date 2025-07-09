@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/nice-pink/audio-tool/pkg/models"
+	"github.com/nice-pink/goutil/pkg/log"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
@@ -39,19 +40,28 @@ func mix(job models.MixJob, codecConfig CodecConfig) error {
 		// input
 		s := ffmpeg.Input(in.Filename, nil)
 
-		if len(job.ProcInfos) >= i {
+		if len(job.ProcInfos) <= i {
 			streams = append(streams, s)
+			log.Info("s:", s)
+			continue
 		}
 
 		procInfo := job.ProcInfos[i]
 		s = filterMixInput(s, in, procInfo)
+		log.Info("s:", s)
 		streams = append(streams, s)
 	}
 
-	filterNodes := ffmpeg.Filter(streams, "amix", nil, getMixFilterArgs()).ASplit()
+	log.Info("streams:", len(streams))
+
+	filterNode := ffmpeg.FilterMultiOutput(streams, "amix", nil, getMixFilterArgs())
+	log.Info("filterNode:", filterNode)
 
 	// run
-	return RunFFmpegInputNode(filterNodes, job.ProcJob, codecConfig)
+	if len(job.ProcJob.Outputs) == 1 {
+		return RunFFmpegInputNodeSimple(filterNode, job.ProcJob, codecConfig)
+	}
+	return RunFFmpegInputNode(filterNode, job.ProcJob, codecConfig)
 }
 
 func filterMixInput(s *ffmpeg.Stream, in models.Input, procInfo models.ProcInfo) *ffmpeg.Stream {
