@@ -14,10 +14,19 @@ import (
 func main() {
 	filepath := flag.String("input", "", "Path to file.")
 	frames := flag.Bool("frames", false, "Show frames.")
+	verbose := flag.Bool("verbose", false, "Show verbose output.")
 	flag.Parse()
 
 	log.Info("*** Start")
 	log.Info(os.Args)
 
-	ffprocess.Probe(*filepath, *frames)
+	info, err := ffprocess.Probe(*filepath, *frames)
+	if err != nil {
+		log.Err(err, "Could not probe audio")
+		os.Exit(1)
+	}
+	if *verbose {
+		log.Info("Probe audio:")
+		log.Info(info)
+	}
 }

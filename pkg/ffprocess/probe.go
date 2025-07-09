@@ -19,8 +19,6 @@ func Probe(filepathIn string, frames bool) (string, error) {
 		log.Err(err, "Could not probe audio")
 		return "", err
 	}
-	log.Info("Probe audio:")
-	log.Info(info)
 	return info, err
 }
 
