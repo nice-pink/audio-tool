@@ -61,7 +61,9 @@ func mix(job models.MixJob, codecConfig CodecConfig) error {
 	if len(job.ProcJob.Outputs) == 1 {
 		return RunFFmpegInputNodeSimple(filterNode, job.ProcJob, codecConfig)
 	}
-	return RunFFmpegInputNode(filterNode, job.ProcJob, codecConfig)
+
+	filterStreamNode := filterNode.Stream("", "").ASplit()
+	return RunFFmpegInputNode(filterStreamNode, job.ProcJob, codecConfig)
 }
 
 func filterMixInput(s *ffmpeg.Stream, in models.Input, procInfo models.ProcInfo) *ffmpeg.Stream {
